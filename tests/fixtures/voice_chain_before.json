@@ -1,0 +1,92 @@
+{
+  "context": {
+    "clean_preset": "light",
+    "f0_method": "harvest",
+    "mode": "voice_conversion",
+    "note": "只读测量 2026-10-04 已完成的短样本换声工程。没有重跑分离、F0、Clean 或 Mix。数字不是听感结论。",
+    "pitch_shift": 0,
+    "project_created_at": "2026-10-04 19:22:47",
+    "rvc_model": "zhoujielun"
+  },
+  "kind": "voice_chain_observation",
+  "listening_quality": "not_assessed",
+  "measured_from": "existing_completed_project",
+  "points": {
+    "mix_output": {
+      "bytes": 5759572,
+      "channel_rms": [
+        0.060134427504779334,
+        0.05983261327009128
+      ],
+      "channels": 2,
+      "clipped_samples": 0,
+      "duration_seconds": 14.998646,
+      "filename": "06_mixed.wav",
+      "sample_peak": 0.5307342410087585,
+      "sample_rate": 48000,
+      "sha256": "0fe8b92c4f1c46a31fc8855592cb83f8297c32b1cf8513df9838749498803d59"
+    },
+    "pre_separation": {
+      "bytes": 5760226,
+      "channel_rms": [
+        0.12259641237778372,
+        0.11859064211899384
+      ],
+      "channels": 2,
+      "clipped_samples": 0,
+      "duration_seconds": 15.0,
+      "filename": "01_standard_input.wav",
+      "sample_peak": 0.8498244285583496,
+      "sample_rate": 48000,
+      "sha256": "11def6865a1474e9f2922422f83b758d8a42d584d2853f0947160fbfe86606cd"
+    },
+    "rvc_output": {
+      "bytes": 2876240,
+      "channel_rms": [
+        0.12370778124945091
+      ],
+      "channels": 1,
+      "clipped_samples": 0,
+      "duration_seconds": 14.98,
+      "filename": "03_vocal_rvc_zhoujielun.wav",
+      "sample_peak": 0.7337646484375,
+      "sample_rate": 48000,
+      "sha256": "81596d9f1608591f6759d5bec97ae22f3d612b116baf91fa3a116ddf2b9b8d4e"
+    }
+  },
+  "project_relative": "output/acceptance/audit_repair/验收 中文短样本_20261004_192142_144337",
+  "role": "before",
+  "schema_version": 1,
+  "baseline_project": {
+    "path": "output/acceptance/audit_repair/验收 中文短样本_20261004_192142_144337/project.json",
+    "sha256": "42c67b873d6db16d8463fd3e8fb8fc5b416350665a77ce6ca34905411043e279",
+    "job_spec_sha256": "cb6202b86c130e610b20abc4c84436c4f6a2a3f3369a31ad668616d6ca57932c",
+    "source_sha256": "11def6865a1474e9f2922422f83b758d8a42d584d2853f0947160fbfe86606cd",
+    "effective_identity": {
+      "mode": "voice_conversion",
+      "clean_preset": "light",
+      "f0_method": "harvest",
+      "pitch_shift": 0,
+      "rvc_model_key": "zhoujielun",
+      "rvc_artifact_hashes": {
+        "index": "9c29e62d99fc57af1cf2b8b5cc77bd63c12c7b0e4f9a7604868364a640af3f5e",
+        "pth": "4354f69efcc539c869817047c51eacc4d033da1c51b927fd953a593f041753bf"
+      },
+      "rvc_profile": {
+        "commercial": null,
+        "f0_method": "harvest",
+        "filter_radius": 3,
+        "index_rate": 0.65,
+        "pitch": 0,
+        "protect": 0.33,
+        "rms_mix_rate": 0.25
+      },
+      "separator_route": "hp2",
+      "rvc_output_precision": "legacy_int16"
+    }
+  },
+  "engineering_policy": {
+    "id": "unseeded-legacy-envelope-v1",
+    "baseline_kind": "unseeded_legacy_observation"
+  }
+}

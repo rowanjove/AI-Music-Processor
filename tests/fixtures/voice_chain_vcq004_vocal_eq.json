@@ -1,0 +1,27 @@
+{
+  "change": "VCQ-004",
+  "default_vocal_extras": {
+    "channel_rms": [
+      0.07385056409118441,
+      0.07385056409118441
+    ],
+    "clipped_samples": 0,
+    "high_band_mean_square": 837.2811076644491,
+    "low_band_mean_square": 75315.95779268684,
+    "sample_peak": 0.1469537317752838
+  },
+  "listening_quality": "not_assessed",
+  "preset": "light",
+  "role": "comparison",
+  "signal": "1 second, 50 Hz at 0.2 plus 7000 Hz at 0.08, stereo",
+  "skipped_vocal_extras": {
+    "channel_rms": [
+      0.13450778698474075,
+      0.13450778698474075
+    ],
+    "clipped_samples": 0,
+    "high_band_mean_square": 837.2126167940547,
+    "low_band_mean_square": 365899.34324815124,
+    "sample_peak": 0.24950355291366577
+  }
+}

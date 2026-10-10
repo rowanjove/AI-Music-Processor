@@ -1,0 +1,28 @@
+{
+  "change": "VCQ-005",
+  "empty_same_bytes": true,
+  "empty_same_path": true,
+  "empty_wrote_dest": false,
+  "enabled": {
+    "channel_rms": [
+      0.20000000298022835,
+      0.20000000298022835
+    ],
+    "clipped_samples": 0,
+    "sample_peak": 0.20000000298023224
+  },
+  "enabled_file_differs": true,
+  "gain": 0.5,
+  "listening_quality": "not_assessed",
+  "role": "comparison",
+  "signal": "4800 stereo samples at float32 0.4, 48000 Hz",
+  "source": {
+    "channel_rms": [
+      0.4000000059604567,
+      0.4000000059604567
+    ],
+    "clipped_samples": 0,
+    "sample_peak": 0.4000000059604645
+  },
+  "source_bytes_unchanged_after_enable": true
+}

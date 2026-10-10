@@ -1,0 +1,253 @@
+{
+  "assets": [
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/hubert_base.pt",
+          "sha256": "f54b40fd2802423a5643779c4861af1e9ee9c1564dc9d32f54f20b5ffba7db96",
+          "size": 189507909
+        }
+      ],
+      "id": "hubert_base",
+      "license_status": "UNKNOWN",
+      "root": "tools/RVC/RVC-beta-v2-0618/hubert_base.pt",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/HP2_all_vocals.pth",
+          "sha256": "39796caa5db18d7f9382d8ac997ac967bfd85f7761014bb807d2543cc844ef05",
+          "size": 63454827
+        }
+      ],
+      "id": "HP2_all_vocals",
+      "license_status": "UNKNOWN",
+      "root": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/HP2_all_vocals.pth",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "runtime/addons/basic_pitch/saved_models/icassp_2022/nmp.onnx",
+          "sha256": "2c3c1d144bfa61ad236e92e169c13535c880469a12a047d4e73451f2c059a0ec",
+          "size": 230444
+        }
+      ],
+      "id": "nmp",
+      "license_status": "UNKNOWN",
+      "root": "runtime/addons/basic_pitch/saved_models/icassp_2022/nmp.onnx",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/rmvpe.pt",
+          "sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193",
+          "size": 181184272
+        }
+      ],
+      "id": "rmvpe",
+      "license_status": "UNKNOWN",
+      "root": "tools/RVC/RVC-beta-v2-0618/rmvpe.pt",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/UVR5/models/MDX_Net_Models/Kim_Vocal_2.onnx",
+          "sha256": "ce74ef3b6a6024ce44211a07be9cf8bc6d87728cc852a68ab34eb8e58cde9c8b",
+          "size": 66759214
+        }
+      ],
+      "id": "Kim_Vocal_2",
+      "license_status": "UNKNOWN",
+      "root": "tools/UVR5/models/MDX_Net_Models/Kim_Vocal_2.onnx",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/UVR5/models/MDX_Net_Models/UVR-MDX-NET-Inst_HQ_3.onnx",
+          "sha256": "317554b07fe1ea5279a77f2b1520a41ea4b93432560c4ffd08792c30fddf9adc",
+          "size": 66759214
+        }
+      ],
+      "id": "UVR-MDX-NET-Inst_HQ_3",
+      "license_status": "UNKNOWN",
+      "root": "tools/UVR5/models/MDX_Net_Models/UVR-MDX-NET-Inst_HQ_3.onnx",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/weights/sunyanzi.pth",
+          "roles": [
+            "model:rvc-weights"
+          ],
+          "sha256": "3115b4dc888175a4d78a74bacbbc4dc85c8f0be028270306e82b74e1c84f8642",
+          "size": 57581999
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/weights/zhaolusi.pth",
+          "roles": [
+            "model:rvc-weights"
+          ],
+          "sha256": "3c3f67730653b3ee8501ab6edde58172dc24b766db830d590a1ee49e96be43ff",
+          "size": 57545091
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/weights/zhoujielun.pth",
+          "roles": [
+            "model:rvc-weights"
+          ],
+          "sha256": "4354f69efcc539c869817047c51eacc4d033da1c51b927fd953a593f041753bf",
+          "size": 57583952
+        }
+      ],
+      "id": "rvc-weights",
+      "license_status": "UNKNOWN",
+      "root": "tools/RVC/RVC-beta-v2-0618/weights",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/logs/sunyanzi/added_IVF1249_Flat_nprobe_1_syz_v2.index",
+          "roles": [
+            "model:rvc-indexes"
+          ],
+          "sha256": "c6cd193132c72105867685480bd705af37ae9bfbf875436bc0bbcadcde8ffd1b",
+          "size": 153923139
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/logs/zhaolusi/added_IVF1362_Flat_nprobe_1_zls_1_v2.index",
+          "roles": [
+            "model:rvc-indexes"
+          ],
+          "sha256": "e8d3779efa07a0f14505cbe4d3f8227d268b5c171aad5601b69ecb27e33f31ba",
+          "size": 167872459
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/logs/zhoujielun/added_IVF1803_Flat_nprobe_1_zhoujielun_v2.index",
+          "roles": [
+            "model:rvc-indexes"
+          ],
+          "sha256": "9c29e62d99fc57af1cf2b8b5cc77bd63c12c7b0e4f9a7604868364a640af3f5e",
+          "size": 222240619
+        }
+      ],
+      "id": "rvc-indexes",
+      "license_status": "UNKNOWN",
+      "root": "tools/RVC/RVC-beta-v2-0618/logs",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/HP2_all_vocals.pth",
+          "sha256": "39796caa5db18d7f9382d8ac997ac967bfd85f7761014bb807d2543cc844ef05",
+          "size": 63454827
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/HP3_all_vocals.pth",
+          "roles": [
+            "model:uvr-models"
+          ],
+          "sha256": "45e6b65199e781b4a6542002699be9f19cd3d1cb7d1558bc2bfbcd84674dfe28",
+          "size": 63454827
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/HP5_only_main_vocal.pth",
+          "roles": [
+            "model:uvr-models"
+          ],
+          "sha256": "5908891829634926119720241e8573d97cbeb8277110a7512bdb0bd7563258ee",
+          "size": 63454827
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/onnx_dereverb_By_FoxJoy/vocals.onnx",
+          "roles": [
+            "model:uvr-models"
+          ],
+          "sha256": "233bb5c6aaa365e568659a0a81211746fa881f8f47f82d9e864fce1f7692db80",
+          "size": 66780123
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/VR-DeEchoAggressive.pth",
+          "roles": [
+            "model:uvr-models"
+          ],
+          "sha256": "8c8fd1582f9aabc363e47af62ddb88df6cae7e064cae75bbf041a067a5e0aee2",
+          "size": 63666335
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/VR-DeEchoDeReverb.pth",
+          "roles": [
+            "model:uvr-models"
+          ],
+          "sha256": "01376dd2a571bf3cb9cced680732726d2d732609d09216a610b0d110f133febe",
+          "size": 111925279
+        },
+        {
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/VR-DeEchoNormal.pth",
+          "roles": [
+            "model:uvr-models"
+          ],
+          "sha256": "56aba59db3bcdd14a14464e62f3129698ecdea62eee0f003b9360923eb3ac79e",
+          "size": 63666335
+        }
+      ],
+      "id": "uvr-models",
+      "license_status": "UNKNOWN",
+      "root": "tools/RVC/RVC-beta-v2-0618/uvr5_weights",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [
+        {
+          "path": "tools/UVR5/models/Demucs_Models/v3_v4_repo/955717e8-8726e21a.th",
+          "roles": [
+            "model:demucs-checkpoints"
+          ],
+          "sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+          "size": 84141911
+        }
+      ],
+      "id": "demucs-checkpoints",
+      "license_status": "UNKNOWN",
+      "root": "tools/UVR5/models/Demucs_Models/v3_v4_repo",
+      "source_status": "UNKNOWN",
+      "status": "PRESENT"
+    },
+    {
+      "distribution_status": "UNKNOWN",
+      "files": [],
+      "id": "custom-rvc-models",
+      "license_status": "UNKNOWN",
+      "root": "models/rvc",
+      "source_status": "UNKNOWN",
+      "status": "OPTIONAL_ABSENT"
+    }
+  ],
+  "schema_version": 1
+}

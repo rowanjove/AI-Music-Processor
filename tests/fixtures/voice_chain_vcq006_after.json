@@ -1,0 +1,68 @@
+{
+  "change": "VCQ-006",
+  "context": {
+    "add_reverb": false,
+    "explicit_aecho_mix": {
+      "channel_rms": [
+        0.060134427504779334,
+        0.05983261327009128
+      ],
+      "clipped_samples": 0,
+      "duration_seconds": 14.998646,
+      "sample_peak": 0.5307342410087585
+    },
+    "mix_instrumental": "stems/04_instrumental.wav",
+    "mix_vocal": "stems/03_vocal_aligned.wav",
+    "mode": "voice_conversion",
+    "note": "同一条短样本的对齐人声和伴奏，用当前 mix_stems 重混。默认关闭 aecho，对照记录显式开启。没有重跑分离或 RVC。数字不是听感结论。"
+  },
+  "kind": "voice_chain_observation",
+  "listening_quality": "not_assessed",
+  "measured_from": "existing_completed_project",
+  "points": {
+    "mix_output": {
+      "bytes": 5759572,
+      "channel_rms": [
+        0.05982411522059676,
+        0.05950971914576987
+      ],
+      "channels": 2,
+      "clipped_samples": 0,
+      "duration_seconds": 14.998646,
+      "filename": "06_mixed_default.wav",
+      "sample_peak": 0.5251206159591675,
+      "sample_rate": 48000,
+      "sha256": "46dab5813d061e2a4ff9ebcdf5b37e6410347dbd9d58795b58c84ebd38847fd4"
+    },
+    "pre_separation": {
+      "bytes": 5760226,
+      "channel_rms": [
+        0.12259641237778372,
+        0.11859064211899384
+      ],
+      "channels": 2,
+      "clipped_samples": 0,
+      "duration_seconds": 15.0,
+      "filename": "01_standard_input.wav",
+      "sample_peak": 0.8498244285583496,
+      "sample_rate": 48000,
+      "sha256": "11def6865a1474e9f2922422f83b758d8a42d584d2853f0947160fbfe86606cd"
+    },
+    "rvc_output": {
+      "bytes": 2876240,
+      "channel_rms": [
+        0.12370778124945091
+      ],
+      "channels": 1,
+      "clipped_samples": 0,
+      "duration_seconds": 14.98,
+      "filename": "03_vocal_rvc_zhoujielun.wav",
+      "sample_peak": 0.7337646484375,
+      "sample_rate": 48000,
+      "sha256": "81596d9f1608591f6759d5bec97ae22f3d612b116baf91fa3a116ddf2b9b8d4e"
+    }
+  },
+  "project_relative": "output/acceptance/audit_repair/验收 中文短样本_20261004_192142_144337",
+  "role": "after",
+  "schema_version": 1
+}

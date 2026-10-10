@@ -1,0 +1,514 @@
+{
+  "schema_version": 1,
+  "app_version": "1.0.0-local.20261009",
+  "policy": {
+    "transport": "https-only-with-explicit-hosts",
+    "sha256_required": true,
+    "redirects_must_stay_on_allowed_hosts": true,
+    "user_models": "never_auto_download",
+    "complete_install": "online Polish bootstrap or same-version .ampkg/full donor for model-heavy modes",
+    "user_data_root": "%LOCALAPPDATA%/AI-Music-Processor",
+    "bootstrap_install": "verified wheels are staged and installed into the application runtime; models remain user-owned"
+  },
+  "sources": [
+    {
+      "component_id": "app.core",
+      "status": "DERIVED",
+      "reason": "源码随轻量包提供；不需要网络组件下载。"
+    },
+    {
+      "component_id": "runtime.python",
+      "status": "PINNED",
+      "kind": "python_installer",
+      "version": "3.9.13",
+      "urls": [
+        "https://www.python.org/ftp/python/3.9.13/python-3.9.13-amd64.exe"
+      ],
+      "allowed_hosts": [
+        "www.python.org"
+      ],
+      "sha256": "fb3d0466f3754752ca7fd839a09ffe53375ff2c981279fd4bc23a005458f7f5d",
+      "size_bytes": 29235432,
+      "install_strategy": "native_installer",
+      "reason": "Python 官方 Windows x64 安装器；安装器必须启用 Tcl/Tk，随后由引导程序验证 import tkinter。"
+    },
+    {
+      "component_id": "runtime.torch",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "2.0.0-cpu",
+      "urls": [
+        "https://files.pythonhosted.org/packages/25/45/b91c4bf6b4b6325e9c758ef1203978ae5455c71e52054a7aca23befe33df/torch-2.0.0-cp39-cp39-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "c7e67195e1c3e33da53954b026e89a8e1ff3bc1aeb9eb32b677172d4a9b5dcbf",
+      "size_bytes": 172333273,
+      "install_strategy": "pip_install",
+      "import_probe": "torch",
+      "bootstrap_dependencies": [
+        "python.filelock",
+        "python.typing_extensions",
+        "python.sympy",
+        "python.mpmath",
+        "python.networkx",
+        "python.jinja2",
+        "python.markupsafe"
+      ],
+      "optional": true,
+      "variant": "cpu",
+      "official_page": "https://pypi.org/project/torch/2.0.0/",
+      "reason": "PyPI 官方 CPython 3.9 Windows x64 CPU wheel，版本、大小和 SHA-256 固定；GPU/CUDA 变体仍需同版本 donor 或另行审核的官方 PyTorch wheel。"
+    },
+    {
+      "component_id": "runtime.fairseq",
+      "status": "PINNED",
+      "kind": "archive",
+      "version": "0.12.2",
+      "urls": [
+        "https://files.pythonhosted.org/packages/30/36/db42846570f479ac859be3b48d8b47f2ae9b0b9c77487a512f2f2ecbcb6b/fairseq-0.12.2.tar.gz"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "34f1b18426bf3844714534162f065ab733e049597476daa35fffb4d06a92b524",
+      "size_bytes": 9595935,
+      "install_strategy": "cache_only",
+      "reason": "PyPI 官方归档已固定；单个源码归档不能构成完整运行时，先缓存并要求同版本完整组件包。"
+    },
+    {
+      "component_id": "runtime.faiss",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.7.2",
+      "urls": [
+        "https://files.pythonhosted.org/packages/9b/86/2937a7ac2537291c0b2bec2137e78c033d6137aaaad80db795c80695cfbf/faiss_cpu-1.7.2-cp39-cp39-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "9492c98990b1184de0edf5232e5ab8c2a1ceebc54d0fc30e3fac9d75a4914985",
+      "size_bytes": 9933905,
+      "install_strategy": "cache_only",
+      "reason": "PyPI 官方 CPython 3.9 Windows x64 wheel 已固定；运行时仍需与其它依赖一起由完整组件包安装。"
+    },
+    {
+      "component_id": "runtime.demucs",
+      "status": "PINNED",
+      "kind": "archive",
+      "version": "4.0.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/87/38/55f835ebd9f443465087a6954ede19d4a41aebdf5e28567e89b99d6d2f57/demucs-4.0.1.tar.gz"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "e45a5a788bae79767c37bbf6e69aae03862ddcca05550fb79b926346a177d713",
+      "size_bytes": 1212924,
+      "install_strategy": "cache_only",
+      "reason": "PyPI 官方归档已固定；模型与 Torch 依赖不随轻量包下载。"
+    },
+    {
+      "component_id": "runtime.basic_pitch",
+      "status": "PINNED",
+      "kind": "archive",
+      "version": "0.4.0",
+      "urls": [
+        "https://files.pythonhosted.org/packages/d3/68/384dcaa2493497581ef7a0f18c76ce35afa26ea8a8d703f4761bdae632e6/basic_pitch-0.4.0.tar.gz"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "6f48ac4b909c990fd59460622137a03b857c829bb1f3e65c71708da576ab68e5",
+      "size_bytes": 3715128,
+      "install_strategy": "cache_only",
+      "reason": "PyPI 官方归档已固定；Basic Pitch ONNX 模型必须由完整组件包提供并校验。"
+    },
+    {
+      "component_id": "tool.ffmpeg",
+      "status": "PINNED",
+      "kind": "archive",
+      "version": "N-127252-ga25ba44c0c",
+      "urls": [
+        "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-08-13-05/ffmpeg-N-127252-ga25ba44c0c-win64-gpl-shared.zip"
+      ],
+      "allowed_hosts": [
+        "github.com",
+        "objects.githubusercontent.com",
+        "github-releases.githubusercontent.com",
+        "release-assets.githubusercontent.com"
+      ],
+      "sha256": "418d52a70b96907141eb786da5ee3a29eed2c2c454420d52360d5330132d25ac",
+      "size_bytes": 88829183,
+      "install_strategy": "archive_install",
+      "install_paths": [
+        "runtime/bin/ffmpeg.exe",
+        "runtime/bin/ffprobe.exe"
+      ],
+      "official_page": "https://ffmpeg.org/download.html",
+      "reason": "FFmpeg 官方下载页指向的 Windows 构建发布资产；BtbN release archive、大小和 SHA-256 已冻结。"
+    },
+    {
+      "component_id": "tool.ffprobe",
+      "status": "DERIVED",
+      "official_page": "https://ffmpeg.org/download.html",
+      "install_strategy": "derived_from_archive",
+      "derived_from": "tool.ffmpeg",
+      "reason": "ffprobe.exe 与 ffmpeg.exe 同属于已校验的 FFmpeg Windows archive；安装器从同一资产提取，不重复下载。"
+    },
+    {
+      "component_id": "engine.rvc",
+      "status": "UNAVAILABLE",
+      "reason": "RVC vendor tree 的发布来源与再分发授权未形成当前版本哈希档案；只接受同版本完整 donor/ampkg。"
+    },
+    {
+      "component_id": "model.hubert",
+      "status": "UNAVAILABLE",
+      "reason": "模型权重来源和再分发许可未形成当前版本哈希档案；只接受同版本完整 donor/ampkg。"
+    },
+    {
+      "component_id": "engine.separator.hp2",
+      "status": "UNAVAILABLE",
+      "reason": "HP2 权重的来源/授权未形成当前版本哈希档案；只接受同版本完整 donor/ampkg。"
+    },
+    {
+      "component_id": "engine.separator.htdemucs",
+      "status": "UNAVAILABLE",
+      "reason": "HTDemucs 模型权重必须随同版本完整 donor/ampkg 提供；不自动抓取未固定模型。"
+    },
+    {
+      "component_id": "engine.basic_pitch",
+      "status": "UNAVAILABLE",
+      "reason": "Basic Pitch ONNX 权重必须随同版本完整 donor/ampkg 提供；不以 PyPI 源码归档冒充模型安装。"
+    },
+    {
+      "component_id": "model.rvc.zhoujielun",
+      "status": "USER_OWNED_ONLY",
+      "reason": "声音模型属于用户/权利人资产；只接受用户明确导入，不自动下载或暗示再分发许可。"
+    },
+    {
+      "component_id": "model.rvc.sunyanzi",
+      "status": "USER_OWNED_ONLY",
+      "reason": "声音模型属于用户/权利人资产；只接受用户明确导入，不自动下载或暗示再分发许可。"
+    },
+    {
+      "component_id": "model.rvc.zhaolusi",
+      "status": "USER_OWNED_ONLY",
+      "reason": "声音模型属于用户/权利人资产；只接受用户明确导入，不自动下载或暗示再分发许可。"
+    },
+    {
+      "component_id": "model.rvc.user_scan",
+      "status": "USER_OWNED_ONLY",
+      "reason": "仅扫描用户自己的 models/rvc 或显式导入目录，不联网寻找名人权重。"
+    },
+    {
+      "component_id": "mode.polish",
+      "status": "DERIVED",
+      "reason": "流程由 app.core 与 FFmpeg 能力组成；组件来源随依赖项决定。"
+    },
+    {
+      "component_id": "mode.voice_conversion",
+      "status": "DERIVED",
+      "reason": "流程由 RVC、HuBERT、separator、FFmpeg 与用户模型组成；完整 donor/ampkg 才能形成可运行闭包。"
+    },
+    {
+      "component_id": "mode.transcribe",
+      "status": "DERIVED",
+      "reason": "流程由 HTDemucs、Basic Pitch、FFmpeg 与运行时组成；完整 donor/ampkg 才能形成可运行闭包。"
+    },
+    {
+      "component_id": "tool.audacity",
+      "status": "DERIVED",
+      "official_page": "https://github.com/audacity/audacity/releases/tag/Audacity-3.7.7",
+      "reason": "固定官方版本及SHA-256；scripts/install_components.ps1按工具选择委派到外部编辑器安装器，不改变应用runtime。",
+      "derived_from": "packaging/editor-sources.json"
+    },
+    {
+      "component_id": "tool.neuralnote",
+      "status": "DERIVED",
+      "official_page": "https://github.com/DamRsn/NeuralNote/releases/tag/v2.0.0",
+      "reason": "固定官方版本及SHA-256；scripts/install_components.ps1按工具选择委派到外部编辑器安装器，不改变应用runtime。",
+      "derived_from": "packaging/editor-sources.json"
+    },
+    {
+      "component_id": "tool.lmms",
+      "status": "DERIVED",
+      "official_page": "https://github.com/LMMS/lmms/releases/tag/v1.2.2",
+      "reason": "固定官方版本及SHA-256；scripts/install_components.ps1按工具选择委派到外部编辑器安装器，不改变应用runtime。",
+      "derived_from": "packaging/editor-sources.json"
+    },
+    {
+      "component_id": "tool.musescore",
+      "status": "DERIVED",
+      "official_page": "https://github.com/musescore/MuseScore/releases/tag/v4.6.5",
+      "reason": "固定官方版本及SHA-256；scripts/install_components.ps1按工具选择委派到外部编辑器安装器，不改变应用runtime。",
+      "derived_from": "packaging/editor-sources.json"
+    },
+    {
+      "component_id": "engine.f0.rmvpe",
+      "status": "UNAVAILABLE",
+      "reason": "RMVPE vendor/model 当前无经发布门禁确认的官方下载哈希；只接受同版本完整 donor/ampkg。"
+    },
+    {
+      "component_id": "engine.separator.mdx",
+      "status": "UNAVAILABLE",
+      "reason": "MDX vendor/model 当前无经发布门禁确认的官方下载哈希；只接受同版本完整 donor/ampkg。"
+    },
+    {
+      "component_id": "engine.separator.roformer",
+      "status": "UNAVAILABLE",
+      "reason": "RoFormer 外部组件由用户提供并显式配置；当前不自动下载未冻结来源。"
+    },
+    {
+      "component_id": "engine.separator.kim_vocal_2",
+      "status": "UNAVAILABLE",
+      "reason": "Kim Vocal 2 模型的来源/授权未形成当前版本哈希档案；只接受同版本完整 donor/ampkg。"
+    },
+    {
+      "component_id": "engine.separator.inst_hq_3",
+      "status": "UNAVAILABLE",
+      "reason": "Inst HQ 3 模型的来源/授权未形成当前版本哈希档案；只接受同版本完整 donor/ampkg。"
+    }
+  ],
+  "bootstrap_packages": [
+    {
+      "component_id": "python.numpy",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.24.4",
+      "urls": [
+        "https://files.pythonhosted.org/packages/63/38/6cc19d6b8bfa1d1a459daf2b3fe325453153ca7019976274b6f33d8b5663/numpy-1.24.4-cp39-cp39-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "befe2bf740fd8373cf56149a5c23a0f601e82869598d41f8e188a0e9869926f8",
+      "size_bytes": 14867441,
+      "install_strategy": "pip_install",
+      "import_probe": "numpy",
+      "reason": "PyPI 官方 CPython 3.9 Windows x64 wheel，版本、大小和 SHA-256 固定；用于 Polish 数值主链。"
+    },
+    {
+      "component_id": "python.scipy",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.10.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/35/20/0ec6246bbb43d18650c9a7cad6602e1a84fd8f9564a9b84cc5faf1e037d0/scipy-1.10.1-cp39-cp39-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "7ff7f37b1bf4417baca958d254e8e2875d0cc23aaadbe65b3d5b3077b0eb23ea",
+      "size_bytes": 42509516,
+      "install_strategy": "pip_install",
+      "import_probe": "scipy",
+      "reason": "PyPI 官方 CPython 3.9 Windows x64 wheel，版本、大小和 SHA-256 固定；用于 Polish 频谱/数值处理。"
+    },
+    {
+      "component_id": "python.soundfile",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "0.13.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/14/e9/6b761de83277f2f02ded7e7ea6f07828ec78e4b229b80e4ca55dd205b9dc/soundfile-0.13.1-py2.py3-none-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "1e70a05a0626524a69e9f0f4dd2ec174b4e9567f4d8b6c11d38b5c289be36ee9",
+      "size_bytes": 1019162,
+      "install_strategy": "pip_install",
+      "import_probe": "soundfile",
+      "reason": "PyPI 官方通用 wheel；依赖 cffi/pycparser 同时由本清单固定安装。"
+    },
+    {
+      "component_id": "python.cffi",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.15.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/a8/16/06b84a7063a4c0a2b081030fdd976022086da9c14e80a9ed4ba0183a98a9/cffi-1.15.1-cp39-cp39-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "70df4e3b545a17496c9b3f41f5115e69a4f2e77e94e1d2a8e1070bc0c38c8a3c",
+      "size_bytes": 179079,
+      "install_strategy": "pip_install",
+      "import_probe": "cffi",
+      "reason": "PyPI 官方 CPython 3.9 Windows x64 wheel；为 SoundFile 提供二进制 FFI。"
+    },
+    {
+      "component_id": "python.pycparser",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "2.21",
+      "urls": [
+        "https://files.pythonhosted.org/packages/62/d5/5f610ebe421e85889f2e55e33b7f9a6795bd982198517d912eb1c76e1a53/pycparser-2.21-py2.py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9",
+      "size_bytes": 118697,
+      "install_strategy": "pip_install",
+      "import_probe": "pycparser",
+      "reason": "PyPI 官方通用 wheel；为 cffi 提供固定解析依赖。"
+    },
+    {
+      "component_id": "python.mido",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.3.2",
+      "urls": [
+        "https://files.pythonhosted.org/packages/39/2c/df005c4b310dde2c834431032139bf2c3924f81798013feb052d1afd543b/mido-1.3.2-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "9f5668d2eae78e43d54f4c651f8bf41a614eb23f98ce5179d3ddd984bf19eb58",
+      "size_bytes": 54613,
+      "install_strategy": "pip_install",
+      "import_probe": "mido",
+      "reason": "PyPI 官方通用 wheel；用于 MIDI/扒谱辅助链，和 Polish 共用 runtime。"
+    },
+    {
+      "component_id": "python.filelock",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "3.9.0",
+      "urls": [
+        "https://files.pythonhosted.org/packages/14/4c/b201d0292ca4e0950f0741212935eac9996f69cd66b92a3587e594999163/filelock-3.9.0-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "f58d535af89bb9ad5cd4df046f741f8553a418c01a7856bf0d173bbc9f6bd16d",
+      "size_bytes": 9729,
+      "install_strategy": "pip_install",
+      "import_probe": "filelock",
+      "reason": "PyPI 官方 Torch 2.0.0 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.typing_extensions",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "4.4.0",
+      "urls": [
+        "https://files.pythonhosted.org/packages/0b/8e/f1a0a5a76cfef77e1eb6004cb49e5f8d72634da638420b9ea492ce8305e8/typing_extensions-4.4.0-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e",
+      "size_bytes": 26662,
+      "install_strategy": "pip_install",
+      "import_probe": "typing_extensions",
+      "reason": "PyPI 官方 Torch 2.0.0 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.sympy",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.11.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/2d/49/a2d03101e2d28ad528968144831d506344418ef1cc04839acdbe185889c2/sympy-1.11.1-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "938f984ee2b1e8eae8a07b884c8b7a1146010040fccddc6539c54f401c8f6fcf",
+      "size_bytes": 6471005,
+      "install_strategy": "pip_install",
+      "import_probe": "sympy",
+      "reason": "PyPI 官方 Torch 2.0.0 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.mpmath",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "1.2.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/d4/cf/3965bddbb4f1a61c49aacae0e78fd1fe36b5dc36c797b31f30cf07dcbbb7/mpmath-1.2.1-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "604bc21bd22d2322a177c73bdb573994ef76e62edd595d17e00aff24b0667e5c",
+      "size_bytes": 532568,
+      "install_strategy": "pip_install",
+      "import_probe": "mpmath",
+      "reason": "PyPI 官方 SymPy 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.networkx",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "2.8.8",
+      "urls": [
+        "https://files.pythonhosted.org/packages/42/31/d2f89f1ae42718f8c8a9e440ebe38d7d5fe1e0d9eb9178ce779e365b3ab0/networkx-2.8.8-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "e435dfa75b1d7195c7b8378c3859f0445cd88c6b0375c181ed66823a9ceb7524",
+      "size_bytes": 2025192,
+      "install_strategy": "pip_install",
+      "import_probe": "networkx",
+      "reason": "PyPI 官方 Torch 2.0.0 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.jinja2",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "3.1.2",
+      "urls": [
+        "https://files.pythonhosted.org/packages/bc/c3/f068337a370801f372f2f8f6bad74a5c140f6fda3d9de154052708dd3c65/Jinja2-3.1.2-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61",
+      "size_bytes": 133101,
+      "install_strategy": "pip_install",
+      "import_probe": "jinja2",
+      "reason": "PyPI 官方 Torch 2.0.0 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.markupsafe",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "2.1.1",
+      "urls": [
+        "https://files.pythonhosted.org/packages/71/dc/41cbfe0d9aefdf14226dbf4eccfd0079a0e297809a17c5b902c9a7a3cc9a/MarkupSafe-2.1.1-cp39-cp39-win_amd64.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "46d00d6cfecdde84d40e572d63735ef81423ad31184100411e6e3388d405e247",
+      "size_bytes": 17092,
+      "install_strategy": "pip_install",
+      "import_probe": "markupsafe",
+      "reason": "PyPI 官方 Jinja2 CPython 3.9 Windows x64 运行时依赖，固定 wheel 与 SHA-256。"
+    },
+    {
+      "component_id": "python.packaging",
+      "status": "PINNED",
+      "kind": "wheel",
+      "version": "22.0",
+      "urls": [
+        "https://files.pythonhosted.org/packages/8f/7b/42582927d281d7cb035609cd3a543ffac89b74f3f4ee8e1c50914bcb57eb/packaging-22.0-py3-none-any.whl"
+      ],
+      "allowed_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "sha256": "957e2148ba0e1a3b282772e791ef1d8083648bc131c8ab0c1feba110ce1146c3",
+      "size_bytes": 42619,
+      "install_strategy": "pip_install",
+      "import_probe": "packaging",
+      "reason": "PyPI 官方 mido 1.3.2 运行时依赖，固定 wheel 与 SHA-256。"
+    }
+  ]
+}

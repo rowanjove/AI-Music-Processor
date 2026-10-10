@@ -1,0 +1,111 @@
+{
+  "cases": [
+    {
+      "changed_component": "engine.rvc",
+      "expected_stage": "RVC",
+      "stages_key_changed": [
+        "RVC"
+      ],
+      "stages_key_unchanged": [
+        "Ingest",
+        "Analyze",
+        "Clean",
+        "Separate:voice_conversion",
+        "Separate:transcribe",
+        "RVCPost",
+        "Align",
+        "Mix",
+        "Master",
+        "QC",
+        "Transcribe"
+      ]
+    },
+    {
+      "changed_component": "model.hubert",
+      "expected_stage": "RVC",
+      "stages_key_changed": [
+        "RVC"
+      ],
+      "stages_key_unchanged": [
+        "Ingest",
+        "Analyze",
+        "Clean",
+        "Separate:voice_conversion",
+        "Separate:transcribe",
+        "RVCPost",
+        "Align",
+        "Mix",
+        "Master",
+        "QC",
+        "Transcribe"
+      ]
+    },
+    {
+      "changed_component": "engine.separator.hp2",
+      "expected_stage": "Separate:voice_conversion",
+      "stages_key_changed": [
+        "Separate:voice_conversion"
+      ],
+      "stages_key_unchanged": [
+        "Ingest",
+        "Analyze",
+        "Clean",
+        "Separate:transcribe",
+        "RVC",
+        "RVCPost",
+        "Align",
+        "Mix",
+        "Master",
+        "QC",
+        "Transcribe"
+      ]
+    },
+    {
+      "changed_component": "engine.separator.htdemucs",
+      "expected_stage": "Separate:transcribe",
+      "stages_key_changed": [
+        "Separate:transcribe"
+      ],
+      "stages_key_unchanged": [
+        "Ingest",
+        "Analyze",
+        "Clean",
+        "Separate:voice_conversion",
+        "RVC",
+        "RVCPost",
+        "Align",
+        "Mix",
+        "Master",
+        "QC",
+        "Transcribe"
+      ]
+    },
+    {
+      "changed_component": "engine.basic_pitch",
+      "expected_stage": "Transcribe",
+      "stages_key_changed": [
+        "Transcribe"
+      ],
+      "stages_key_unchanged": [
+        "Ingest",
+        "Analyze",
+        "Clean",
+        "Separate:voice_conversion",
+        "Separate:transcribe",
+        "RVC",
+        "RVCPost",
+        "Align",
+        "Mix",
+        "Master",
+        "QC"
+      ]
+    }
+  ],
+  "change": "FOUND-011",
+  "clean_has_component_declaration": false,
+  "rvc_components": [
+    "component:engine.rvc",
+    "component:model.hubert"
+  ],
+  "stage_contract_version": 2
+}

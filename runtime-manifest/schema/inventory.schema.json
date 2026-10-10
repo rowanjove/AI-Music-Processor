@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/ai-music-processor/inventory.schema.json",
+  "title": "Immutable source and runtime file inventory",
+  "type": "object",
+  "required": ["schema_version", "files", "cache_policy"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "files": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "cache_policy": {
+      "type": "object",
+      "required": ["excluded_directory", "sourceless_bytecode"],
+      "properties": {
+        "excluded_directory": { "const": "__pycache__" },
+        "sourceless_bytecode": { "const": "included outside __pycache__" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "artifact_file": {
+      "type": "object",
+      "required": ["path", "size", "sha256"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(^|/)\\.\\.?(/|$))(?!.*\\\\).+$" },
+        "size": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "roles": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "required": ["path", "size", "sha256", "roles"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$))(?!.*\\\\).+$" },
+        "size": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "roles": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

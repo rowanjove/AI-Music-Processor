@@ -1,0 +1,60 @@
+{
+  "change": "VCQ-008",
+  "defaults_changed": false,
+  "global_defaults": {
+    "f0_method": "harvest",
+    "filter_radius": 3,
+    "index_rate": 0.65,
+    "pitch": 0,
+    "protect": 0.33,
+    "rms_mix_rate": 0.25
+  },
+  "models": {
+    "sunyanzi": {
+      "effective": {
+        "f0_method": "harvest",
+        "filter_radius": 3,
+        "index_rate": 0.65,
+        "pitch": 0,
+        "protect": 0.33,
+        "rms_mix_rate": 0.25
+      },
+      "has_override_file": false,
+      "matches_defaults": true,
+      "name": "孙燕姿 (Stefanie Sun)",
+      "present": true,
+      "profile_warning_count": 0
+    },
+    "zhaolusi": {
+      "effective": {
+        "f0_method": "harvest",
+        "filter_radius": 3,
+        "index_rate": 0.65,
+        "pitch": 0,
+        "protect": 0.33,
+        "rms_mix_rate": 0.25
+      },
+      "has_override_file": false,
+      "matches_defaults": true,
+      "name": "赵露思 (Rosy Zhao)",
+      "present": true,
+      "profile_warning_count": 0
+    },
+    "zhoujielun": {
+      "effective": {
+        "f0_method": "harvest",
+        "filter_radius": 3,
+        "index_rate": 0.65,
+        "pitch": 0,
+        "protect": 0.33,
+        "rms_mix_rate": 0.25
+      },
+      "has_override_file": false,
+      "matches_defaults": true,
+      "name": "周杰伦 (Jay Chou)",
+      "present": true,
+      "profile_warning_count": 0
+    }
+  },
+  "role": "audit"
+}

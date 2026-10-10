@@ -1,0 +1,12 @@
+{
+  "upstream": "https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI",
+  "commit": "b3f54df1be1be0411e092e3bf85924a5b0a4527e",
+  "path": "infer/rmvpe.py",
+  "upstream_sha256": "074171aec63e4b68f04d8691c62af50a1d99b9bc6dc56c4d6749fad4ba64853a",
+  "license": "MIT; adjacent RVC_LICENSE",
+  "adaptations": ["Optional CUDA graph helper replaced by explicit eager execution for bundled Torch 2.0.", "Host worker owns explicit device and precision instead of importing modern WebUI configs.config; duplicate resample initialization removed. Upstream model architecture and checkpoint layout retained.", "Checkpoint deserialization explicitly uses weights_only=True and has no unsafe pickle fallback."],
+  "managed_weight_sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193",
+  "managed_weight_bytes": 181184272,
+  "deserialization_authority": "Adapter authenticates immutable bytes before passing an in-memory stream to bundled Torch; user-selected RMVPE artifacts are not accepted.",
+  "quality_status": "READY_FOR_EXTERNAL_VALIDATION"
+}

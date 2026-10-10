@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/ai-music-processor/runtime.schema.json",
+  "title": "Current installed runtime summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "snapshot_kind",
+    "generated_at_utc",
+    "distribution_status",
+    "source_status",
+    "license_status",
+    "python",
+    "package_count",
+    "artifacts",
+    "snapshot_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "snapshot_kind": { "const": "current-installed-local-bundle" },
+    "generated_at_utc": { "type": "string", "format": "date-time" },
+    "distribution_status": { "type": "string", "const": "UNKNOWN; public distribution is not cleared by this snapshot" },
+    "source_status": { "type": "string", "const": "UNKNOWN" },
+    "license_status": { "type": "string", "const": "UNKNOWN" },
+    "python": {
+      "type": "object",
+      "required": ["implementation", "version", "version_full", "machine", "bits", "executable"],
+      "properties": {
+        "implementation": { "type": "string" },
+        "version": { "type": "string" },
+        "version_full": { "type": "string" },
+        "machine": { "type": "string" },
+        "bits": { "type": "integer", "minimum": 1 },
+        "executable": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "package_count": { "type": "integer", "minimum": 0 },
+    "artifacts": {
+      "type": "object",
+      "required": ["inventory", "packages", "vendor", "models"],
+      "properties": {
+        "inventory": { "$ref": "#/$defs/artifact" },
+        "packages": { "$ref": "#/$defs/artifact" },
+        "vendor": { "$ref": "#/$defs/artifact" },
+        "models": { "$ref": "#/$defs/artifact" },
+        "components": { "$ref": "#/$defs/artifact" }
+      },
+      "additionalProperties": false
+    },
+    "snapshot_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^runtime-manifest/[A-Za-z0-9._/-]+$" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "file_count": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,946 @@
+{
+  "schema_version": 1,
+  "catalog_kind": "installed-workspace-description",
+  "size_policy": "probed_bytes counts declared probe files only. It is not a download size, an install size, or a full directory footprint.",
+  "components": [
+    {
+      "id": "app.core",
+      "name": "Core Application",
+      "kind": "application",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "1.0.0-local.20261009",
+      "version_evidence": "VERSION",
+      "version_probe": {
+        "type": "text_file",
+        "file": "VERSION"
+      },
+      "capabilities": [
+        "app.launch"
+      ],
+      "modes": [
+        "polish",
+        "voice_conversion",
+        "transcribe"
+      ],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "AI_Music_Processor.pyw",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "process_music.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "core/pipeline.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "VERSION",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "runtime.python",
+      "name": "Python AI Runtime",
+      "kind": "runtime",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "3.9.13",
+      "version_evidence": "runtime-manifest/runtime.json python.version",
+      "version_probe": {
+        "type": "json_keys",
+        "file": "runtime-manifest/runtime.json",
+        "keys": [
+          "python",
+          "version"
+        ]
+      },
+      "capabilities": [
+        "runtime.python"
+      ],
+      "modes": [
+        "polish",
+        "voice_conversion",
+        "transcribe"
+      ],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/runtime/python.exe",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "runtime.torch",
+      "name": "Torch Runtime",
+      "kind": "runtime",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "2.0.0+cu118",
+      "version_evidence": "runtime-manifest/packages.lock.json name=torch",
+      "version_probe": {
+        "type": "path_exists",
+        "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/torch-2.0.0+cu118.dist-info"
+      },
+      "capabilities": [
+        "runtime.torch"
+      ],
+      "modes": [
+        "voice_conversion",
+        "transcribe"
+      ],
+      "dependencies": [
+        "runtime.python"
+      ],
+      "probes": [
+        {
+          "type": "relative_dir",
+          "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/torch-2.0.0+cu118.dist-info",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "runtime.fairseq",
+      "name": "fairseq",
+      "kind": "runtime",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "0.12.2",
+      "version_evidence": "runtime-manifest/packages.lock.json name=fairseq",
+      "version_probe": {
+        "type": "path_exists",
+        "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/fairseq-0.12.2.dist-info"
+      },
+      "capabilities": [
+        "voice.feature_runtime"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "runtime.python"
+      ],
+      "probes": [
+        {
+          "type": "relative_dir",
+          "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/fairseq-0.12.2.dist-info",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "runtime.faiss",
+      "name": "faiss-cpu",
+      "kind": "runtime",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "1.7.2",
+      "version_evidence": "runtime-manifest/packages.lock.json name=faiss-cpu",
+      "version_probe": {
+        "type": "path_exists",
+        "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/faiss_cpu-1.7.2.dist-info"
+      },
+      "capabilities": [
+        "voice.index_runtime"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "runtime.python"
+      ],
+      "probes": [
+        {
+          "type": "relative_dir",
+          "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/faiss_cpu-1.7.2.dist-info",
+          "role": "required"
+        }
+      ],
+      "details": {
+        "notes": "vc_infer_pipeline.py imports faiss at module import, so the package is required even when index_rate is 0."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "runtime.demucs",
+      "name": "Demucs package",
+      "kind": "runtime",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "4.0.1",
+      "version_evidence": "runtime-manifest/packages.lock.json name=demucs",
+      "version_probe": {
+        "type": "path_exists",
+        "path": "runtime/addons/demucs-4.0.1.dist-info"
+      },
+      "capabilities": [
+        "separator.four_stem.runtime"
+      ],
+      "modes": [
+        "transcribe"
+      ],
+      "dependencies": [
+        "runtime.python",
+        "runtime.torch"
+      ],
+      "probes": [
+        {
+          "type": "relative_dir",
+          "path": "runtime/addons/demucs-4.0.1.dist-info",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "runtime.basic_pitch",
+      "name": "basic-pitch package",
+      "kind": "runtime",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "0.4.0",
+      "version_evidence": "runtime-manifest/packages.lock.json name=basic-pitch",
+      "version_probe": {
+        "type": "path_exists",
+        "path": "runtime/addons/basic_pitch-0.4.0.dist-info"
+      },
+      "capabilities": [
+        "midi.runtime"
+      ],
+      "modes": [
+        "transcribe"
+      ],
+      "dependencies": [
+        "runtime.python"
+      ],
+      "probes": [
+        {
+          "type": "relative_dir",
+          "path": "runtime/addons/basic_pitch-0.4.0.dist-info",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "tool.ffmpeg",
+      "name": "FFmpeg",
+      "kind": "tool",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "audio.decode",
+        "audio.encode"
+      ],
+      "modes": [
+        "polish",
+        "voice_conversion",
+        "transcribe"
+      ],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "tool",
+          "name": "ffmpeg",
+          "release_path": "runtime/bin/ffmpeg.exe",
+          "dev_paths": [
+            "tools/ffmpeg/ffmpeg.exe",
+            "tools/RVC/RVC-beta-v2-0618/ffmpeg.exe"
+          ],
+          "allow_host_in_dev": true,
+          "host_before_dev_path_index": 1
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "tool.ffprobe",
+      "name": "ffprobe",
+      "kind": "tool",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "audio.probe"
+      ],
+      "modes": [
+        "polish",
+        "voice_conversion",
+        "transcribe"
+      ],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "tool",
+          "name": "ffprobe",
+          "release_path": "runtime/bin/ffprobe.exe",
+          "dev_paths": [
+            "tools/ffmpeg/ffprobe.exe",
+            "tools/RVC/RVC-beta-v2-0618/ffprobe.exe"
+          ],
+          "allow_host_in_dev": true,
+          "host_before_dev_path_index": 1
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.rvc",
+      "name": "RVC voice engine",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "RVC-beta-v2-0618",
+      "version_evidence": "tools/RVC/RVC-beta-v2-0618",
+      "version_probe": {
+        "type": "path_exists",
+        "path": "tools/RVC/RVC-beta-v2-0618"
+      },
+      "capabilities": [
+        "voice.rvc"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "runtime.python",
+        "runtime.torch",
+        "runtime.fairseq",
+        "runtime.faiss"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/vc_infer_pipeline.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/my_utils.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/infer_pack/models.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_dir",
+          "path": "tools/RVC/RVC-beta-v2-0618",
+          "role": "required"
+        }
+      ],
+      "details": {
+        "f0_methods": [
+          "harvest",
+          "pm",
+          "crepe",
+          "rmvpe"
+        ],
+        "f0_methods_not_implemented": [],
+        "notes": "RVC worker supports official RMVPE through a first-party VC adapter without editing 0618 vendor source; FP32 and F0 track export are enforced."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "model.hubert",
+      "name": "HuBERT base",
+      "kind": "model",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "voice.feature_extractor"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "runtime.fairseq"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/hubert_base.pt",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.separator.hp2",
+      "name": "HP2 two-stem separator",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "HP2_all_vocals",
+      "version_evidence": "core/separator.py resolve_voice_backend defaults to hp2: HP2_all_vocals.pth agg 10",
+      "capabilities": [
+        "separator.two_stem"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "runtime.python",
+        "runtime.torch"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/uvr5_weights/HP2_all_vocals.pth",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/infer_uvr5.py",
+          "role": "required"
+        }
+      ],
+      "details": {
+        "notes": "Voice conversion backend id is hp2. Unknown ids are rejected. Other UVR weights may exist on disk and are not routed."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.separator.htdemucs",
+      "name": "HTDemucs four-stem separator",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "htdemucs",
+      "version_evidence": "core/creative_worker.py get_model('htdemucs')",
+      "capabilities": [
+        "separator.four_stem"
+      ],
+      "modes": [
+        "transcribe"
+      ],
+      "dependencies": [
+        "runtime.python",
+        "runtime.torch",
+        "runtime.demucs"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/UVR5/models/Demucs_Models/v3_v4_repo/955717e8-8726e21a.th",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/UVR5/models/Demucs_Models/v3_v4_repo/htdemucs.yaml",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.basic_pitch",
+      "name": "Basic Pitch vocal MIDI",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": "icassp_2022",
+      "capabilities": [
+        "midi.vocal"
+      ],
+      "modes": [
+        "transcribe"
+      ],
+      "dependencies": [
+        "runtime.python",
+        "runtime.basic_pitch"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "runtime/addons/basic_pitch/saved_models/icassp_2022/nmp.onnx",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "model.rvc.zhoujielun",
+      "name": "周杰伦",
+      "kind": "model",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "voice.model"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "engine.rvc"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/weights/zhoujielun.pth",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/logs/zhoujielun/added_IVF1803_Flat_nprobe_1_zhoujielun_v2.index",
+          "role": "optional"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "model.rvc.sunyanzi",
+      "name": "孙燕姿",
+      "kind": "model",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "voice.model"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "engine.rvc"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/weights/sunyanzi.pth",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/logs/sunyanzi/added_IVF1249_Flat_nprobe_1_syz_v2.index",
+          "role": "optional"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "model.rvc.zhaolusi",
+      "name": "赵露思",
+      "kind": "model",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "voice.model"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "engine.rvc"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/weights/zhaolusi.pth",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/logs/zhaolusi/added_IVF1362_Flat_nprobe_1_zls_1_v2.index",
+          "role": "optional"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "model.rvc.user_scan",
+      "name": "User RVC models",
+      "kind": "model_scan",
+      "ownership": "user",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "voice.model"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "user_rvc_models",
+          "weights_dir": "tools/RVC/RVC-beta-v2-0618/weights",
+          "logs_dir": "tools/RVC/RVC-beta-v2-0618/logs",
+          "user_root": "models/rvc",
+          "managed_files": [
+            "zhoujielun.pth",
+            "sunyanzi.pth",
+            "zhaolusi.pth"
+          ]
+        }
+      ],
+      "details": {
+        "notes": "Classifies models/rvc and extra weights/*.pth as user-owned. Does not move or delete files."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "mode.polish",
+      "name": "精修",
+      "kind": "mode_pack",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "mode.polish"
+      ],
+      "modes": [
+        "polish"
+      ],
+      "dependencies": [
+        "app.core",
+        "runtime.python",
+        "tool.ffmpeg",
+        "tool.ffprobe"
+      ],
+      "probes": [],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "mode.voice_conversion",
+      "name": "换声重制",
+      "kind": "mode_pack",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "mode.voice_conversion"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "app.core",
+        "tool.ffmpeg",
+        "tool.ffprobe",
+        "engine.rvc",
+        "model.hubert",
+        "engine.separator.hp2"
+      ],
+      "requires_any": [
+        "model.rvc.zhoujielun",
+        "model.rvc.sunyanzi",
+        "model.rvc.zhaolusi",
+        "model.rvc.user_scan"
+      ],
+      "probes": [],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "mode.transcribe",
+      "name": "扒谱四轨",
+      "kind": "mode_pack",
+      "ownership": "managed",
+      "required": true,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "mode.transcribe"
+      ],
+      "modes": [
+        "transcribe"
+      ],
+      "dependencies": [
+        "app.core",
+        "tool.ffmpeg",
+        "tool.ffprobe",
+        "engine.separator.htdemucs",
+        "engine.basic_pitch"
+      ],
+      "probes": [],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "tool.audacity",
+      "name": "Audacity",
+      "kind": "tool",
+      "ownership": "external",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "editor.audacity"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/Audacity/Audacity-4.0.1.262721353[909d5f7]-x86_64/bin/Audacity4.exe",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "tool.neuralnote",
+      "name": "NeuralNote",
+      "kind": "tool",
+      "ownership": "external",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "editor.neuralnote"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/NeuralNote/NeuralNote.exe",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "tool.lmms",
+      "name": "LMMS",
+      "kind": "tool",
+      "ownership": "external",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "editor.lmms"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/LMMS/lmms.exe",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "tool.musescore",
+      "name": "MuseScore",
+      "kind": "tool",
+      "ownership": "external",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "editor.musescore"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "tools/MuseScore/MuseScorePortable.exe",
+          "role": "required"
+        }
+      ],
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.f0.rmvpe",
+      "name": "RMVPE",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "pitch.rmvpe"
+      ],
+      "modes": [
+        "voice_conversion"
+      ],
+      "dependencies": [
+        "runtime.python",
+        "runtime.torch"
+      ],
+      "probes": [
+        {
+          "type": "relative_file",
+          "path": "core/rmvpe_adapter.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "core/vendor/rmvpe.py",
+          "role": "required"
+        },
+        {
+          "type": "relative_file",
+          "path": "tools/RVC/RVC-beta-v2-0618/rmvpe.pt",
+          "role": "required"
+        }
+      ],
+      "details": {
+        "notes": "Official RMVPE adapter executes FP32/eager inference. Missing weight requests through the legacy API record an explicit harvest fallback. Listening quality remains not assessed."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.separator.mdx",
+      "name": "MDX separator",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": "dual-profile-adapter",
+      "version_evidence": "core/mdx_separator.py + core/separator.py dual-profile route",
+      "capabilities": [
+        "separator.two_stem.mdx"
+      ],
+      "modes": ["voice_conversion"],
+      "dependencies": ["runtime.python"],
+      "probes": [
+        {"type": "relative_file", "path": "core/mdx_separator.py", "role": "required"},
+        {"type": "relative_file", "path": "core/separator.py", "role": "required"},
+        {"type": "relative_file", "path": "tools/UVR5/models/MDX_Net_Models/model_data/model_data.json", "role": "required"},
+        {"type": "relative_dir", "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/onnxruntime", "role": "required"}
+      ],
+      "details": {"notes": "This is the MDX execution engine used by the independent Kim Vocal 2 + Inst HQ 3 dual profile. The legacy backend id mdx remains rejected as a single selectable model; HP2 agg is not used by this route."},
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.separator.roformer",
+      "name": "RoFormer separator",
+      "kind": "engine",
+      "ownership": "external",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "version_evidence": "core/candidate_separator.py fixed public audio-separator adapter",
+      "capabilities": [
+        "separator.two_stem.roformer"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {"type": "relative_file", "path": "core/candidate_separator.py", "role": "required"},
+        {"type": "relative_dir", "path": "tools/RVC/RVC-beta-v2-0618/runtime/Lib/site-packages/audio_separator", "role": "required"},
+        {"type": "relative_file", "path": "tools/UVR5/models/RoFormer_Models/model_bs_roformer_ep_317_sdr_12.9755.ckpt", "role": "required"},
+        {"type": "relative_file", "path": "tools/UVR5/models/RoFormer_Models/model_bs_roformer_ep_317_sdr_12.9755.yaml", "role": "required"},
+        {"type": "relative_file", "path": "tools/UVR5/models/RoFormer_Models/download_checks.json", "role": "required"}
+      ],
+      "details": {"minimum_python_version": [3, 10], "notes": "The fixed adapter implements the public API but is an isolated candidate only. Model, YAML and support metadata must be locally managed and hash-frozen; it is not selectable in production jobs."},
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.separator.kim_vocal_2",
+      "name": "Kim Vocal 2",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "separator.vocal.kim_vocal_2"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {"type": "relative_file", "path": "tools/UVR5/models/MDX_Net_Models/Kim_Vocal_2.onnx", "role": "required"}
+      ],
+      "details": {
+        "notes": "Role is vocal only in the independent dual profile. Actual model identity and metadata are frozen per job. HP2 agg is not a parameter of this model."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    },
+    {
+      "id": "engine.separator.inst_hq_3",
+      "name": "UVR-MDX-NET Inst HQ 3",
+      "kind": "engine",
+      "ownership": "managed",
+      "required": false,
+      "implemented": true,
+      "version": null,
+      "capabilities": [
+        "separator.instrumental.inst_hq_3"
+      ],
+      "modes": [],
+      "dependencies": [],
+      "probes": [
+        {"type": "relative_file", "path": "tools/UVR5/models/MDX_Net_Models/UVR-MDX-NET-Inst_HQ_3.onnx", "role": "required"}
+      ],
+      "details": {
+        "notes": "Role is instrumental only in the independent dual profile. Actual model identity and metadata are frozen per job. HP2 agg is not a parameter of this model."
+      },
+      "license_status": "UNKNOWN",
+      "distribution_status": "UNKNOWN"
+    }
+  ]
+}

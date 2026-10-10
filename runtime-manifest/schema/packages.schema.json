@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/ai-music-processor/packages.schema.json",
+  "title": "Installed Python distribution metadata lock",
+  "type": "object",
+  "required": ["schema_version", "runtime_python", "search_order", "module_resolution", "distributions", "rebuild_claim"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "runtime_python": { "type": "object" },
+    "search_order": { "type": "array", "items": { "type": "string" } },
+    "module_resolution": { "type": "object" },
+    "distributions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "normalized_name", "version", "search_order", "site_root", "metadata_root", "metadata_files", "requires_dist"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "normalized_name": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 },
+          "search_order": { "type": "integer", "minimum": 0 },
+          "site_root": { "type": "string" },
+          "metadata_root": { "type": "string" },
+          "metadata_files": { "type": "array", "items": { "$ref": "inventory.schema.json#/$defs/artifact_file" }, "minItems": 1 },
+          "requires_dist": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "rebuild_claim": { "const": "snapshot of the current installed bundle; no network pip rebuild was verified" }
+  },
+  "additionalProperties": false
+}

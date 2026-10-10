@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/ai-music-processor/vendor.schema.json",
+  "title": "Selected vendor inference and configuration trees",
+  "type": "object",
+  "required": ["schema_version", "source_status", "license_status", "distribution_status", "roots"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "source_status": { "const": "UNKNOWN" },
+    "license_status": { "const": "UNKNOWN" },
+    "distribution_status": { "const": "UNKNOWN" },
+    "roots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path", "files"],
+        "properties": {
+          "id": { "type": "string" },
+          "path": { "type": "string" },
+          "files": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

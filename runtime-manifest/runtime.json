@@ -1,0 +1,41 @@
+{
+  "artifacts": {
+    "components": {
+      "path": "runtime-manifest/components.json",
+      "sha256": "22296d1ccd7a1777e17b2a426ccad442a437585007ab6492015e90a1d44cf390"
+    },
+    "inventory": {
+      "file_count": 35001,
+      "path": "runtime-manifest/inventory.json",
+      "sha256": "cbece4d157caa3bfcd7e79991784bfe8088a2f7c057e16d36b3e91e4cb193b47"
+    },
+    "models": {
+      "path": "runtime-manifest/models.json",
+      "sha256": "1e8d99256f5ab069908a5ea1da36d5bc367ab169fbff2ed3499d52298f7d143c"
+    },
+    "packages": {
+      "path": "runtime-manifest/packages.lock.json",
+      "sha256": "9b1c3e0088536c0d2f819b17218ea76eb36299f6d92fedd315c50376856354ed"
+    },
+    "vendor": {
+      "path": "runtime-manifest/vendor.json",
+      "sha256": "22c89e7db724469ce5eeb56b84563c4b80396b377835e8217926fc4e456c53f3"
+    }
+  },
+  "distribution_status": "UNKNOWN; public distribution is not cleared by this snapshot",
+  "generated_at_utc": "2026-10-09T13:00:32Z",
+  "license_status": "UNKNOWN",
+  "package_count": 146,
+  "python": {
+    "bits": 64,
+    "executable": "tools/RVC/RVC-beta-v2-0618/runtime/python.exe",
+    "implementation": "CPython",
+    "machine": "AMD64",
+    "version": "3.9.13",
+    "version_full": "3.9.13 (tags/v3.9.13:6de2ca5, May 17 2022, 16:36:42) [MSC v.1929 64 bit (AMD64)]"
+  },
+  "schema_version": 1,
+  "snapshot_kind": "current-installed-local-bundle",
+  "snapshot_sha256": "c43c2774474f1b44985a60b3e97c4c356ac64e869479f6c97f85f95896976ab3",
+  "source_status": "UNKNOWN"
+}

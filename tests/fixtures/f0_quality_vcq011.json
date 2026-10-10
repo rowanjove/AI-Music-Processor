@@ -1,0 +1,20 @@
+{
+  "change": "VCQ-011",
+  "listening_quality": "not_assessed",
+  "blocks_job": false,
+  "score": null,
+  "song_f0": "不可观测",
+  "export_reason": "RVC 0618 worker 没有写出 F0 轨迹，不能从成品波形反推分数",
+  "stable_220hz": {
+    "frames": 32,
+    "jump_count": 0,
+    "status": "F0_STABLE",
+    "voiced_ratio": 1.0
+  },
+  "unstable_110_440": {
+    "frames": 8,
+    "jump_count": 7,
+    "status": "F0_UNSTABLE",
+    "voiced_ratio": 1.0
+  }
+}

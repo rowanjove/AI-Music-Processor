@@ -1,0 +1,80 @@
+# User data and machine-local state
+/config/app.json
+/config/queue.json
+/config/lmms.xml
+/song/
+/output/
+/temp/
+/logs/
+/处理后/
+
+# Full machine asset-path inventory (vendor/runtime/user-data paths, not source)
+/docs/project_file_index_2026-10-05.txt
+
+# Runtime, models, bundled applications, and vendor trees are local assets.
+/runtime/
+/models/
+/tools/*
+!/tools/*.bat
+!/tools/*.cmd
+!/tools/*.pyw
+/tools/Suno*
+
+# Local databases and SQLite sidecars/backups
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Python/editor/test caches and logs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+/startup_error.log
+
+# Build and local acceptance output
+/build/
+/dist/
+/release-dist/
+/evidence/
+*.zip
+
+# Root-level user media and generated/model binaries
+/*.wav
+/*.mp3
+/*.flac
+/*.mid
+/*.exe
+/*.dll
+/*.pyd
+/*.pth
+/*.pt
+/*.onnx
+/*.index
+
+# Internal development reports, audit records, design proposals, matrices and archives
+/文档归档/
+/CODE_REVIEW_REPORT.md
+/DOCUMENT_IMPLEMENTATION_MATRIX.md
+/PROJECT_REPORT.md
+/RELEASE_READINESS_REPORT.md
+/AI_MUSIC_PROCESSOR_*.md
+/AI音乐一体化*.md
+/VOICE_CONVERSION_*.md
+/docs/AUDIT_FIX_EVIDENCE_*.md
+/docs/IMPLEMENTATION_TASK_EVIDENCE_*.md
+/docs/STARTUP_HOTFIX_*.md
+/docs/UI_FIRST_LIGHTWEIGHT_ACCEPTANCE_*.md
+/docs/需求落地矩阵.md
+/docs/FRESH_MACHINE_ACCEPTANCE.md
+/docs/P0_HARDENING.md
+/docs/*snapshot*.json
+/docs/*验收*.md
+/docs/*审查*.md

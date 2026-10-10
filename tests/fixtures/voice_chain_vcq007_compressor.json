@@ -1,0 +1,37 @@
+{
+  "change": "VCQ-007",
+  "compressor": "acompressor=threshold=0.125:ratio=2.5:attack=15:release=80",
+  "crest_definition": "sample_peak divided by each channel_rms",
+  "echo": "off",
+  "f0": "not_rerun",
+  "kept_compressor": {
+    "channel_rms": [
+      0.05982411522059676,
+      0.05950971914576987
+    ],
+    "clipped_samples": 0,
+    "crest_factor": [
+      8.7777414512998,
+      8.824115178108594
+    ],
+    "duration_seconds": 14.998646,
+    "sample_peak": 0.5251206159591675
+  },
+  "listening_quality": "not_assessed",
+  "project_relative": "output/acceptance/audit_repair/验收 中文短样本_20261004_192142_144337",
+  "role": "comparison",
+  "separator": "not_rerun",
+  "skipped_compressor": {
+    "channel_rms": [
+      0.061547894029515805,
+      0.06124499473630715
+    ],
+    "clipped_samples": 0,
+    "crest_factor": [
+      8.784652029520467,
+      8.828098271981295
+    ],
+    "duration_seconds": 14.998646,
+    "sample_peak": 0.5406768321990967
+  }
+}

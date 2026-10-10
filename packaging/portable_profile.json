@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "profile": "local-acceptance",
+  "version_file": "VERSION",
+  "public_distribution_status": "UNKNOWN_BLOCKED",
+  "include_files": [
+    "AI_Music_Processor.pyw",
+    "process_music.py",
+    "README.md",
+    "CHANGELOG.md",
+    "THIRD_PARTY_LICENSES.md",
+    "scripts/build_component_package.py",
+    "scripts/run_portable_acceptance.py",
+    "docs/FRESH_MACHINE_ACCEPTANCE.md",
+    "VERSION",
+    "runtime-manifest/components.json",
+    "tools/UVR5/models/MDX_Net_Models/Kim_Vocal_2.onnx",
+    "tools/UVR5/models/MDX_Net_Models/UVR-MDX-NET-Inst_HQ_3.onnx",
+    "tools/UVR5/models/MDX_Net_Models/model_data/model_data.json",
+    "AI-Music-Processor.exe"
+  ],
+  "include_trees": [
+    "LICENSES",
+    "core",
+    "runtime",
+    "tools/RVC/RVC-beta-v2-0618/runtime",
+    "tools/RVC/RVC-beta-v2-0618/configs",
+    "tools/RVC/RVC-beta-v2-0618/infer_pack",
+    "tools/RVC/RVC-beta-v2-0618/uvr5_pack",
+    "tools/UVR5/models/Demucs_Models/v3_v4_repo"
+  ],
+  "include_rvc_inference_files": [
+    "tools/RVC/RVC-beta-v2-0618/config.py",
+    "tools/RVC/RVC-beta-v2-0618/infer_uvr5.py",
+    "tools/RVC/RVC-beta-v2-0618/MDXNet.py",
+    "tools/RVC/RVC-beta-v2-0618/my_utils.py",
+    "tools/RVC/RVC-beta-v2-0618/vc_infer_pipeline.py",
+    "tools/RVC/RVC-beta-v2-0618/hubert_base.pt",
+    "tools/RVC/RVC-beta-v2-0618/rmvpe.pt",
+    "tools/RVC/RVC-beta-v2-0618/LICENSE",
+    "tools/RVC/RVC-beta-v2-0618/使用需遵守的协议-LICENSE.txt"
+  ],
+  "include_suffixes": {
+    "tools/RVC/RVC-beta-v2-0618/weights": [".pth"],
+    "tools/RVC/RVC-beta-v2-0618/logs": [".index"],
+    "tools/RVC/RVC-beta-v2-0618/uvr5_weights": [".onnx", ".pth"]
+  },
+  "copy_embedded_ffmpeg_to_vendor_cwd": ["ffmpeg.exe", "ffprobe.exe"],
+  "exclude_path_prefixes": [
+    ".git",
+    "config/",
+    "logs/ (except allowlisted RVC model indexes)",
+    "output/",
+    "song/",
+    "temp/",
+    "处理后/",
+    "models/rvc/",
+    "tools/Audacity/",
+    "tools/LMMS/",
+    "tools/MuseScore/",
+    "tools/NeuralNote/",
+    "dist/",
+    "evidence/",
+    "docs/P0_HARDENING.md"
+  ],
+  "exclude_directories": ["__pycache__"],
+  "exclude_user_database_audio_logs_and_custom_models": true,
+  "zip_compression": "stored-zip64",
+  "license_and_source_status": "UNKNOWN"
+}

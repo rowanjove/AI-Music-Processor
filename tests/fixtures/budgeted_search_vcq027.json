@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "status": "MEASURED",
+  "model_key": "zhoujielun",
+  "source_role": "only eligible 8 second window of the 15 second cleaned vocal",
+  "clip_start": "00:00:00.000",
+  "clip_end": "00:00:08.000",
+  "eligible_windows": 1,
+  "clip_sample_rate": 48000,
+  "clip_frames": 384000,
+  "index_rate": 0.65,
+  "f0_method": "harvest",
+  "requested_f0": "rmvpe",
+  "actual_f0": null,
+  "f0_inference_status": "NOT_RUN",
+  "executed_count": 3,
+  "planned_count": 3,
+  "promoted": false,
+  "selected_for_job": "baseline",
+  "listening_quality": "not_assessed",
+  "quality_acceptance": "NOT_ASSESSED",
+  "heuristic_only": true,
+  "runs": [
+    {
+      "pitch_shift": 0,
+      "elapsed_seconds": 22.3794022,
+      "sample_peak": 0.631256103515625,
+      "channel_rms": [0.11238682293735766],
+      "clipped_samples": 0,
+      "duration_seconds": 7.98,
+      "sample_rate": 48000,
+      "channels": 1,
+      "clip_ratio": 0.0,
+      "high_frequency_ratio": 0.015036000193546832
+    },
+    {
+      "pitch_shift": -1,
+      "elapsed_seconds": 15.813212799999999,
+      "sample_peak": 0.654388427734375,
+      "channel_rms": [0.11167735949735927],
+      "clipped_samples": 0,
+      "duration_seconds": 7.98,
+      "sample_rate": 48000,
+      "channels": 1,
+      "clip_ratio": 0.0,
+      "high_frequency_ratio": 0.014141142026529427
+    },
+    {
+      "pitch_shift": 1,
+      "elapsed_seconds": 15.939014499999999,
+      "sample_peak": 0.742340087890625,
+      "channel_rms": [0.11251081172884699],
+      "clipped_samples": 0,
+      "duration_seconds": 7.98,
+      "sample_rate": 48000,
+      "channels": 1,
+      "clip_ratio": 0.0,
+      "high_frequency_ratio": 0.015401975346673156
+    }
+  ]
+}

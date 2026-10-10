@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "profile_id": "github-source-win-x64",
+  "source_only": true,
+  "description": "Small source/bootstrap distribution. Polish installs pinned Python/FFmpeg/audio dependencies; model-heavy runtimes and user data are acquired separately.",
+  "included_roots": [
+    "app",
+    "core",
+    "docs/LIGHTWEIGHT_RELEASE.md",
+    "packaging",
+    "scripts/build_lightweight.py",
+    "scripts/install_components.ps1",
+    "tests",
+    "runtime-manifest/components.json"
+  ],
+  "included_root_files": [
+    "AI_Music_Processor.pyw",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "THIRD_PARTY_LICENSES.md",
+    "VERSION",
+    "process_music.py",
+    "启动AI音乐一体化处理器.bat",
+    "LIGHTWEIGHT_RELEASE",
+    "PORTABLE_RELEASE"
+  ],
+  "excluded_roots": [
+    "runtime",
+    "tools",
+    "models",
+    "output",
+    "song",
+    "config",
+    "logs",
+    "temp",
+    "dist",
+    "文档归档"
+  ],
+  "excluded_extensions": [
+    ".exe",
+    ".dll",
+    ".pyd",
+    ".pth",
+    ".pt",
+    ".onnx",
+    ".index",
+    ".wav",
+    ".mp3",
+    ".flac",
+    ".mid",
+    ".zip"
+  ],
+  "binary_exception": "Only a first-party root-level AI-Music-Processor.exe built from app/Launcher.cs may be included; vendor/runtime/model binaries remain excluded.",
+  "installer": {
+    "entry": "scripts/install_components.ps1",
+    "plan_command": "powershell -ExecutionPolicy Bypass -File scripts/install_components.ps1 -Components polish -Plan",
+    "offline_command": "powershell -ExecutionPolicy Bypass -File scripts/install_components.ps1 -OfflinePackage C:\\path\\same-version-donor.zip",
+    "progress_format": "JSONL on stdout and %LOCALAPPDATA%/AI-Music-Processor/logs/online-components-progress.jsonl; final receipt is online-components-receipt.json",
+    "polish_command": "powershell -ExecutionPolicy Bypass -File scripts/install_components.ps1 -InstallPython -Components polish",
+    "user_models": "explicit import only"
+  }
+}

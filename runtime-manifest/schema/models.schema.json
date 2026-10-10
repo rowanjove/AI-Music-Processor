@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/ai-music-processor/models.schema.json",
+  "title": "Model and index artifact records",
+  "type": "object",
+  "required": ["schema_version", "assets"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "root", "status", "source_status", "license_status", "distribution_status", "files"],
+        "properties": {
+          "id": { "type": "string" },
+          "root": { "type": "string" },
+          "status": { "enum": ["PRESENT", "OPTIONAL_ABSENT", "EMPTY"] },
+          "source_status": { "const": "UNKNOWN" },
+          "license_status": { "const": "UNKNOWN" },
+          "distribution_status": { "const": "UNKNOWN" },
+          "files": { "type": "array", "items": { "$ref": "inventory.schema.json#/$defs/artifact_file" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

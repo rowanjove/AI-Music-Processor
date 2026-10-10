@@ -1,0 +1,143 @@
+{
+  "distribution_status": "UNKNOWN",
+  "license_status": "UNKNOWN",
+  "roots": [
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/configs/32k.json",
+        "tools/RVC/RVC-beta-v2-0618/configs/32k_v2.json",
+        "tools/RVC/RVC-beta-v2-0618/configs/40k.json",
+        "tools/RVC/RVC-beta-v2-0618/configs/48k.json",
+        "tools/RVC/RVC-beta-v2-0618/configs/48k_v2.json"
+      ],
+      "id": "rvc-configs",
+      "path": "tools/RVC/RVC-beta-v2-0618/configs"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/attentions.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/commons.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/models.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/models_onnx.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/models_onnx_moess.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/modules.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/modules/F0Predictor/__init__.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/modules/F0Predictor/DioF0Predictor.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/modules/F0Predictor/F0Predictor.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/modules/F0Predictor/HarvestF0Predictor.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/modules/F0Predictor/PMF0Predictor.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/onnx_inference.py",
+        "tools/RVC/RVC-beta-v2-0618/infer_pack/transforms.py"
+      ],
+      "id": "rvc-infer-pack",
+      "path": "tools/RVC/RVC-beta-v2-0618/infer_pack"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/dataset.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers_123812KB .py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers_123821KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers_33966KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers_537227KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers_537238KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/layers_new.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/model_param_init.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr16000_hl512.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr32000_hl512.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr33075_hl384.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr44100_hl1024.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr44100_hl256.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr44100_hl512.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/1band_sr44100_hl512_cut.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/2band_32000.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/2band_44100_lofi.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/2band_48000.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/3band_44100.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/3band_44100_mid.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/3band_44100_msb2.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_44100.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_44100_mid.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_44100_msb.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_44100_msb2.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_44100_reverse.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_44100_sw.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_v2.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_v2_sn.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/4band_v3.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/modelparams/ensemble.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_123812KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_123821KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_33966KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_537227KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_537238KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_61968KB.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/nets_new.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/lib_v5/spec_utils.py",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/name_params.json",
+        "tools/RVC/RVC-beta-v2-0618/uvr5_pack/utils.py"
+      ],
+      "id": "rvc-uvr5-pack",
+      "path": "tools/RVC/RVC-beta-v2-0618/uvr5_pack"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/config.py"
+      ],
+      "id": "rvc-config.py",
+      "path": "tools/RVC/RVC-beta-v2-0618/config.py"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/infer_uvr5.py"
+      ],
+      "id": "rvc-infer_uvr5.py",
+      "path": "tools/RVC/RVC-beta-v2-0618/infer_uvr5.py"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/my_utils.py"
+      ],
+      "id": "rvc-my_utils.py",
+      "path": "tools/RVC/RVC-beta-v2-0618/my_utils.py"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/vc_infer_pipeline.py"
+      ],
+      "id": "rvc-vc_infer_pipeline.py",
+      "path": "tools/RVC/RVC-beta-v2-0618/vc_infer_pipeline.py"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/ffmpeg.exe"
+      ],
+      "id": "rvc-ffmpeg.exe",
+      "path": "tools/RVC/RVC-beta-v2-0618/ffmpeg.exe"
+    },
+    {
+      "files": [
+        "tools/RVC/RVC-beta-v2-0618/ffprobe.exe"
+      ],
+      "id": "rvc-ffprobe.exe",
+      "path": "tools/RVC/RVC-beta-v2-0618/ffprobe.exe"
+    },
+    {
+      "files": [
+        "tools/UVR5/models/Demucs_Models/v3_v4_repo/htdemucs.yaml"
+      ],
+      "id": "demucs-repo",
+      "path": "tools/UVR5/models/Demucs_Models/v3_v4_repo"
+    },
+    {
+      "files": [
+        "tools/UVR5/models/MDX_Net_Models/model_data/model_data.json"
+      ],
+      "id": "mdx-metadata",
+      "path": "tools/UVR5/models/MDX_Net_Models/model_data/model_data.json"
+    }
+  ],
+  "schema_version": 1,
+  "source_status": "UNKNOWN"
+}
