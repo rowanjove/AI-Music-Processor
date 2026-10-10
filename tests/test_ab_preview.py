@@ -37,5 +37,50 @@ class ABPreviewTests(unittest.TestCase):
         for start,duration in ((-1,30),(float('nan'),30),(0,31),(0,float('inf'))):
             with self.assertRaises(ValueError):prepare_ab_preview('missing.wav','unused',start,duration)
 
+    def test_loudness_matched_ab_pair(self):
+        from core.ab_preview import prepare_ab_pair
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); source = root / 'a.wav'; master = root / 'b.wav'
+            rate = 48000; t = np.arange(rate) / rate
+            sf.write(source, (0.4 * np.sin(2 * np.pi * 440 * t)).astype('float32'), rate)
+            sf.write(master, (0.1 * np.sin(2 * np.pi * 440 * t)).astype('float32'), rate)
+            rec_a, rec_b = prepare_ab_pair(source, master, root / 'previews', 0.0, 0.5, match_loudness=True)
+            self.assertTrue(rec_b['loudness_matched'])
+            self.assertAlmostEqual(rec_a['rms'], rec_b['rms'], delta=0.05)
+
+    def test_listening_evaluation_creation_and_anonymization(self):
+        from core.polish_listening import create_listening_evaluation, save_listening_evaluation, export_anonymized_listening_summary, DEFECT_TAGS
+        with tempfile.TemporaryDirectory() as folder:
+            eval_record = create_listening_evaluation(
+                case_id="case-42",
+                listener="Alice Bob",
+                date="2026-10-10",
+                choice_a_role="原始输入",
+                choice_b_role="最终母带",
+                preferred_choice="B",
+                defect_tags=["distortion", "sibilance"],
+                notes="B 更自然，高频轻微齿音",
+            )
+            self.assertEqual(eval_record["listening_quality"], "assessed")
+            self.assertEqual(eval_record["quality_acceptance"], "READY_FOR_EXTERNAL_VALIDATION")
+
+            # Check invalid defect tag rejection
+            with self.assertRaises(ValueError):
+                create_listening_evaluation("case-42", "Alice", "2026-10-10", "A", "B", "B", defect_tags=["invalid_tag"])
+
+            saved = save_listening_evaluation(eval_record, folder)
+            self.assertTrue(Path(saved).is_file())
+
+            # Export anonymized summary
+            summary_path = Path(folder) / "summary.json"
+            summary = export_anonymized_listening_summary([eval_record], summary_path)
+            self.assertEqual(summary["total_evaluations"], 1)
+            self.assertEqual(summary["choices_distribution"]["B"], 1)
+            self.assertEqual(summary["defects_distribution"]["distortion"], 1)
+            # Ensure personal name is redacted
+            anon_record = summary["anonymized_evaluations"][0]
+            self.assertNotIn("Alice Bob", str(anon_record))
+            self.assertTrue(anon_record["evaluator_anon_id"].startswith("evaluator-"))
+
 
 if __name__=='__main__':unittest.main()

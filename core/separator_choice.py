@@ -66,6 +66,7 @@ def compare_separator_metrics(source_id, hp2, other):
         "peak_delta": other["peak"] - hp2["peak"],
         "duration_delta": other["duration"] - hp2["duration"],
         "source_id": source_id,
+        "sdr": other.get("sdr") if (other.get("has_clean_reference") and hp2.get("has_clean_reference")) else "NOT_MEASURABLE (无干净参考音轨)",
     }
     if other.get("audited") is True and hp2.get("audited") is True:
         record["metrics_are_audited_separator"] = True

@@ -230,12 +230,7 @@ class AudioPipeline(StageOperations):
     def _eta_suffix(result: Mapping[str, Any]) -> str:
         seconds = result.get("seconds")
         if seconds is None:
-            reasons = {
-                "execution_identity_unknown": "硬件或执行身份未知",
-                "insufficient_observed_history": "匹配的实际执行样本不足",
-                "running_longer_than_observed_median": "已超过历史中位耗时",
-            }
-            return "；本阶段剩余时间未知（%s）" % reasons.get(result.get("basis"), "无法估算")
+            return ""
         bounds = result.get("range_seconds") or [seconds, seconds]
         return "；本阶段预计剩余约 %.0f 秒（实测范围 %.0f–%.0f 秒，%d 个匹配样本）" % (
             seconds, bounds[0], bounds[1], result.get("sample_count", 0))
@@ -367,7 +362,7 @@ class AudioPipeline(StageOperations):
         self.storage.upsert_stage(job_id, stage_name, status="RUNNING", input_hash=input_hash, parameters=recorded_parameters, started_at=started, attempt=attempt)
         stage_start = min(progress, self._completed_progress)
         self.storage.update_job(job_id, status="RUNNING", current_stage=stage_name, progress=stage_start, error=None)
-        self.set_progress(stage_name, stage_start, "开始；阶段总量暂未知" + _eta_suffix(0.0))
+        self.set_progress(stage_name, stage_start, "开始处理" + _eta_suffix(0.0))
         try:
             _control_check(self._active_control)
             from core.processes import worker_progress_scope
@@ -393,10 +388,18 @@ class AudioPipeline(StageOperations):
             output_hashes = _hash_outputs(outputs)
             if not _validate_outputs(outputs, output_hashes):
                 raise RuntimeError(f"Stage {stage_name} 未生成完整产物")
+
+            is_degraded = bool(isinstance(outputs, dict) and (outputs.get("degraded") or outputs.get("status") == "BYPASSED_BY_ERROR"))
+            stage_warning = outputs.get("warning") if isinstance(outputs, dict) else None
+            if is_degraded:
+                self.log(f"Stage {stage_name} 降级运行（已保留原音频，警告: {stage_warning}）")
+            elif stage_warning:
+                self.log(f"Stage {stage_name} 产生警告: {stage_warning}")
+
             finished = datetime.datetime.now(datetime.timezone.utc).isoformat()
             with self.storage.transaction():
                 self.storage.upsert_stage(job_id, stage_name, status="DONE", input_hash=input_hash, outputs=outputs, output_hashes=output_hashes, parameters=recorded_parameters, started_at=started, finished_at=finished, attempt=attempt)
-                if stage_name != 'RVCSearch':
+                if stage_name != 'RVCSearch' and not is_degraded:
                     self.storage.put_cache(cache_key, stage_name, input_hash, effective_parameters, outputs, output_hashes)
                 for key, output_path in _output_paths(outputs).items():
                     self.storage.register_output(job_id, output_path, kind=stage_name, file_hash=output_hashes.get(key))
@@ -892,6 +895,26 @@ class AudioPipeline(StageOperations):
                     stereo = self._run_stage(job_id, "Stereo", {"input": dynamics["wav"], "analysis": analysis_identity}, stereo_parameters(polish_policy), lambda: render_stage("stereo", dynamics["wav"], stereo_wav, polish_report, polish_policy), 0.74)
                     master_input = stereo["wav"]
                     polish_before = source_trace
+                    stages_results = {
+                        "repair": repaired,
+                        "tone": tone,
+                        "dynamics": dynamics,
+                        "stereo": stereo,
+                    }
+                    degraded_stages = [
+                        name for name, res in stages_results.items()
+                        if isinstance(res, dict) and (res.get("degraded") or res.get("status") == "BYPASSED_BY_ERROR")
+                    ]
+                    _json_file(os.path.join(trace_dir, "polish_decision.json"), {
+                        "decisions": polish_decisions,
+                        "no_problem": polish_decisions.get("no_problem"),
+                        "profile": polish_decisions.get("profile"),
+                        "has_degradation": bool(degraded_stages),
+                        "degraded_stages": degraded_stages,
+                        "stage_statuses": {name: res.get("status") for name, res in stages_results.items() if isinstance(res, dict)},
+                    })
+                    if degraded_stages:
+                        self.log(f"警告：Polish 阶段存在异常降级：{', '.join(degraded_stages)}（已保留原音频，可重试）")
                 else:
                     separate_parameters = {"model": "four-stem-addon-or-HP2", "mode": mode}
                     separate_runner = lambda: self._separate_and_copy(processing_wav, job_temp, stems_dir, mode, **({"execution_policy": params["execution_policy"]} if "execution_policy" in params else {}))
@@ -1631,6 +1654,8 @@ class AudioPipeline(StageOperations):
                 self.storage.assert_owner(job_id)
                 _json_file(os.path.join(project_dir, "project.json"), manifest)
                 self.storage.update_job(job_id, status="DONE", current_stage="Complete", progress=1.0, error=None)
+                if (manifest.get("qc") or {}).get("processing_integrity") == "DEGRADED":
+                    self.log("提示：本次处理包含降级阶段，客观指标通过但部分精修步骤已安全跳过；详情查看质检报告。")
                 self.log(f"[+] 成品项目保存在: {project_dir}")
                 return manifest
         except ProcessCancelled:

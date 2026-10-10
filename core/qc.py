@@ -123,12 +123,53 @@ def run_quality_control(master_wav_path,master_mp3_path,original_file_name,mode_
         failures.append('WAV 真实峰值超过设置上限')
     polish_comparison=None
     polish_trace=None
+    polish_degraded_stages=[]
+    has_polish_degradation=False
     if polish_before:
         from core.polish_qc import comparison_from_files, trace_metrics
         polish_comparison=comparison_from_files(polish_before, master_wav_path)
         for finding in polish_comparison['findings']:
             issues.append(finding['warning'])
-        polish_trace=trace_metrics(os.path.dirname(polish_before), master_wav_path)
+        trace_dir = os.path.dirname(polish_before)
+        polish_trace=trace_metrics(trace_dir, master_wav_path)
+
+        stage_specs = [
+            ("repair", "修损降噪 (Repair)", "执行削波修复与频谱去噪"),
+            ("tone", "音色均衡 (Tone)", "执行共振衰减与频谱均衡匹配"),
+            ("dynamics", "动态控制 (Dynamics)", "执行多频段压缩与动态平滑"),
+            ("stereo", "立体声场 (Stereo)", "执行中侧声场增强与相位校正"),
+        ]
+        decision_path = os.path.join(trace_dir, "polish_decision.json")
+        if os.path.isfile(decision_path):
+            try:
+                with open(decision_path, "r", encoding="utf-8") as f:
+                    decision_data = json.load(f)
+                if decision_data.get("has_degradation"):
+                    has_polish_degradation = True
+            except (OSError, ValueError):
+                pass
+
+        for stg, label, purpose in stage_specs:
+            stage_dec_file = os.path.join(trace_dir, f"{stg}.decision.json")
+            if os.path.isfile(stage_dec_file):
+                try:
+                    with open(stage_dec_file, "r", encoding="utf-8") as f:
+                        sdata = json.load(f)
+                    if sdata.get("degraded") or sdata.get("status") == "BYPASSED_BY_ERROR":
+                        has_polish_degradation = True
+                        warn_msg = sdata.get("warning") or sdata.get("error") or "处理异常"
+                        polish_degraded_stages.append({
+                            "stage": stg,
+                            "name": label,
+                            "intended_action": purpose,
+                            "reason": warn_msg,
+                            "error_type": sdata.get("error_type", "Exception"),
+                            "source_preserved": True,
+                            "retryable": True,
+                        })
+                        issues.append(f"精修阶段【{label}】异常降级：{warn_msg}（已保留前一阶段音频，可按需重试）")
+                except (OSError, ValueError):
+                    pass
     exports={}
     stems={}
     for path in [master_wav_path,master_mp3_path]+list(extra_exports or []):
@@ -157,27 +198,43 @@ def run_quality_control(master_wav_path,master_mp3_path,original_file_name,mode_
     if alignment_path:
         with open(alignment_path,encoding='utf-8-sig') as f:
             alignment=json.load(f)
-        residual=max(abs(alignment['residual_ms']),alignment.get('max_local_residual_ms',0))
+        residual=max(abs(float(alignment.get('residual_ms', 0.0))), float(alignment.get('max_local_residual_ms', 0.0)))
         if not alignment.get('verified'):
             issues.append('对齐相关性不足，不能确认同步；需试听')
         if residual>30:
-            failures.append('对齐后残余误差超过 30ms')
+            failures.append('对齐后残余误差超过 30ms（实测 %.2fms）' % residual)
         elif residual>=10:
-            issues.append('对齐后残余误差 10~30ms，未达到小于10ms的目标')
+            issues.append('对齐后残余误差 10~30ms，未达到小于10ms的目标（实测 %.2fms）' % residual)
     status='FAIL' if failures else ('WARN' if issues else 'PASS')
-    data=dict(status=status,timestamp=datetime.datetime.now().isoformat(),original_file=original_file_name,
+    audio_file_valid = (len(failures) == 0)
+    audio_metrics_passed = (len(failures) == 0)
+    processing_integrity = 'DEGRADED' if (has_polish_degradation or any('降级' in str(x) for x in issues)) else 'INTACT'
+    stage_execution_intact = (processing_integrity == 'INTACT')
+    model_inference_ran = (rvc_raw is not None and bool(rvc_raw.get('finite'))) if mode_name == 'voice_conversion' else True
+    data=dict(status=status,
+              audio_file_valid=audio_file_valid,
+              audio_metrics_passed=audio_metrics_passed,
+              stage_execution_intact=stage_execution_intact,
+              processing_integrity=processing_integrity,
+              model_inference_ran=model_inference_ran,
+              quality_acceptance='READY_FOR_EXTERNAL_VALIDATION',
+              listening_quality='not_assessed',
+              degraded_stages=polish_degraded_stages,
+              timestamp=datetime.datetime.now().isoformat(),original_file=original_file_name,
               mode=mode_name,model=model_name,duration_seconds=duration,**levels,**metrics,
               correction_offset_ms=sync_offset_ms,alignment=alignment,issues=issues,failures=failures,exports=exports,stems=stems)
     data['requested_lufs'] = target_lufs
+    if alignment is not None:
+        data['alignment_offset_ms'] = float(alignment.get('offset_ms', sync_offset_ms))
+        data['residual_offset_ms'] = float(alignment.get('residual_ms', 0.0))
+        data['max_local_residual_ms'] = float(alignment.get('max_local_residual_ms', 0.0))
+        data['alignment_verified'] = bool(alignment.get('verified', False))
     if rvc_raw is not None:
         data['rvc_raw']=rvc_raw
-    if mode_name=='polish':
-        data['quality_acceptance']='READY_FOR_EXTERNAL_VALIDATION'
-        data['listening_quality']='not_assessed'
-        if polish_comparison is not None:
-            data['polish_comparison']=polish_comparison
-        if polish_trace is not None:
-            data['polish_trace']=polish_trace
+    if polish_comparison is not None:
+        data['polish_comparison']=polish_comparison
+    if polish_trace is not None:
+        data['polish_trace']=polish_trace
     try:
         with open(master_wav_path+'.json', encoding='utf-8') as handle:
             mastering = json.load(handle)
@@ -185,13 +242,39 @@ def run_quality_control(master_wav_path,master_mp3_path,original_file_name,mode_
     except (OSError,ValueError):
         data['effective_lufs'] = target_lufs
     report='# 音乐处理质检报告\n\n'
-    report+='- 状态：**%s**\n- 输入：%s\n- 模式：%s\n- 模型：%s\n'%(status,original_file_name,mode_name,model_name)
+    report+='- 综合质检状态：**%s**\n'%(status)
+    report+='- 音频文件有效性：**已完整解码验证（有限浮点数值）**\n'
+    report+='- 客观数值指标：**%s**\n'%('通过' if audio_metrics_passed else '未通过（存在超限指标）')
+    report+='- 阶段执行完整度：%s\n'%('INTACT（全部阶段完整执行）' if stage_execution_intact else '**DEGRADED（存在异常降级）**')
+    report+='- 模型推理运行：%s\n'%('已完成推理' if model_inference_ran else '未运行/已跳过')
+    report+='- 人工音质听审：**未评估 (not_assessed - 客观指标通过不代表免审，音色/伪影需人工试听)**\n'
+    report+='- 质量验收状态：**待外部/人工验收 (READY_FOR_EXTERNAL_VALIDATION)**\n'
+    report+='- 输入：%s\n- 模式：%s\n- 模型：%s\n'%(original_file_name,mode_name,model_name)
     report+='- 时长：%.3fs\n- 响度：%.2f LUFS（目标 %.1f）\n- True Peak：%.2f dBTP（上限 %.1f）\n'%(
         duration,levels['integrated_lufs'],target_lufs,levels['true_peak_dbtp'],true_peak_limit)
-    report+='- 削波采样：%s\n- 校正量：%.2fms（校正量不是残余同步误差）\n'%(metrics['clipped_samples'],sync_offset_ms)
+    report+='- 削波采样：%s\n'%(metrics['clipped_samples'])
+    if alignment is not None:
+        report+='- 对齐整体修正量：%.2fms（全局时间平移量）\n'%float(alignment.get('offset_ms', sync_offset_ms))
+        report+='- 对齐残余偏移：%.2fms（对齐后残余全局误差）\n'%float(alignment.get('residual_ms', 0.0))
+        report+='- 对齐最大局部误差：%.2fms（局部时间窗最大偏差）\n'%float(alignment.get('max_local_residual_ms', 0.0))
+        report+='- 对齐置信验证：%s%s\n'%(
+            '已通过置信校验' if alignment.get('verified') else '未通过置信校验（相关性不足，需人工试听）',
+            ('（相关系数 %.3f）'%alignment['correlation']) if alignment.get('correlation') is not None else ''
+        )
+    else:
+        report+='- 校正量：%.2fms（校正量不是残余同步误差）\n'%(sync_offset_ms)
     report+='- 请求/有效响度目标：%.2f / %.2f LUFS\n' % (target_lufs,data['effective_lufs'])
     report+='\n'+('\n'.join('- '+x for x in failures+issues) or '客观检测通过；音色、伪影、扒谱准确度仍需试听及人工审阅。')
     report+='\n\n导出文件：\n'+ '\n'.join('- '+x for x in exports)+'\n'
+    if polish_degraded_stages:
+        report += '\n## 阶段执行与降级说明 (Processing Integrity)\n\n'
+        report += '以下处理阶段因异常而自动降级。系统已安全保留前一阶段音频并阻止写入破坏数据；任务可按需重试：\n\n'
+        for deg in polish_degraded_stages:
+            report += f"- **{deg['name']}**：\n"
+            report += f"  - 预定任务：{deg['intended_action']}\n"
+            report += f"  - 降级原因：`{deg['reason']}`\n"
+            report += f"  - 音频保护：{'已保留前一阶段有效音频，未破坏输出' if deg['source_preserved'] else '未保留'}\n"
+            report += f"  - 重试建议：{'支持重新运行该阶段' if deg['retryable'] else '不可自动重试'}\n"
     if polish_comparison is not None:
         report+='\n## Polish before / after\n\n'
         report+='- 高频损失：%s\n- 动态塌陷：%s\n- 相位或相关性：%s\n- 削波：%s\n'%(

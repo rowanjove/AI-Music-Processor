@@ -55,7 +55,12 @@ class CacheMaterializationTests(unittest.TestCase):
             self.assertEqual(store.get_stage(second,'Repair')['parameters']['_eta_execution_kind'],'executed')
             shutil.rmtree(old)
             self.assertEqual(Path(result['wav']).read_bytes(),b'rendered')
-            self.assertTrue(Path(result['wav']).is_relative_to(new))
+            try:
+                Path(result['wav']).resolve().relative_to(new.resolve())
+                _is_rel = True
+            except ValueError:
+                _is_rel = False
+            self.assertTrue(_is_rel)
 
 
 if __name__=='__main__':unittest.main()

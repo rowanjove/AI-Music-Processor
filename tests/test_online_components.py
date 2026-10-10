@@ -249,6 +249,17 @@ class OnlineComponentsTests(unittest.TestCase):
             installer.assert_called_once_with(str(package.resolve()), str(root))
             self.assertEqual(result["status"], "NO_CHANGE")
 
+    def test_plan_rows_include_human_status_and_status_descriptions(self):
+        result = plan(ROOT, ROOT / "packaging/download-sources.json", "all")
+        self.assertTrue(result["rows"])
+        for row in result["rows"]:
+            self.assertIn("human_status", row)
+            self.assertTrue(len(row["human_status"]) > 0)
+        ffmpeg_row = next(r for r in result["rows"] if r["component_id"] == "tool.ffmpeg")
+        self.assertIn("可官方在线下载", ffmpeg_row["human_status"])
+        unavailable_row = next(r for r in result["rows"] if r["component_id"] == "engine.rvc")
+        self.assertIn("缺少可信公开来源", unavailable_row["human_status"])
+
 
 if __name__ == "__main__":
     unittest.main()

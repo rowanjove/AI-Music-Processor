@@ -335,5 +335,86 @@ class NativeBootstrapHarness {
                             "unmarked dev build keeps direct pythonw launch behavior")
 
 
+    def test_online_installer_handles_exit_code_and_retry_ui(self):
+        with tempfile.TemporaryDirectory(prefix='amp online install test ') as directory:
+            root = Path(directory)
+            (root / 'LIGHTWEIGHT_RELEASE').write_text('AI Music Processor Lightweight Release v1\n', encoding='ascii')
+            scripts = root / 'scripts'
+            scripts.mkdir(parents=True)
+            real_installer = scripts / 'install_components.ps1'
+            real_installer.write_text('# placeholder', encoding='utf-8')
+
+            mock_fail = root / 'mock_fail.ps1'
+            mock_fail.write_text('exit 42', encoding='utf-8')
+
+            harness_source = root / 'OnlineInstallHarness.cs'
+            harness_source.write_text(r'''
+using System;
+using System.IO;
+using System.Reflection;
+using System.Windows.Forms;
+class OnlineInstallHarness {
+  [STAThread] static int Main(string[] args) {
+    bool failedStateObserved = false;
+    Exception failure = null;
+    Timer timer = new Timer { Interval = 100 };
+    int ticks = 0;
+    Button onlineBtn = null;
+    Label statusLbl = null;
+    Button cancelBtn = null;
+    timer.Tick += delegate {
+      ticks++;
+      foreach (Form form in Application.OpenForms) {
+        if (!form.Text.Contains("离线安装 / 修复")) continue;
+        try {
+          if (onlineBtn == null) {
+            foreach (Control c in form.Controls) {
+              if (c is Button && c.Text.Contains("安装 Python 与精修组件")) onlineBtn = (Button)c;
+              if (c is Label) statusLbl = (Label)c;
+              if (c is Button && c.Text == "取消") cancelBtn = (Button)c;
+            }
+            if (onlineBtn != null) {
+              onlineBtn.PerformClick();
+            }
+          } else {
+            if (statusLbl != null && statusLbl.Text.Contains("退出码 42") && statusLbl.Text.Contains("online-components-progress.jsonl")) {
+              if (onlineBtn.Text.Contains("重试安装") && onlineBtn.Enabled) {
+                failedStateObserved = true;
+                timer.Stop();
+                if (cancelBtn != null) cancelBtn.PerformClick();
+                else form.Close();
+              }
+            }
+          }
+          if (ticks > 120) {
+            failure = new Exception("Timeout waiting for online install exit handling");
+            timer.Stop();
+            form.Close();
+          }
+        } catch (Exception err) { failure = err; timer.Stop(); form.Close(); }
+        break;
+      }
+    };
+    timer.Start();
+    Environment.SetEnvironmentVariable("AMP_TEST_INSTALLER_SCRIPT", args[1]);
+    MethodInfo method = typeof(Launcher).GetMethod("ShowRepair", BindingFlags.NonPublic | BindingFlags.Static);
+    bool accepted = (bool)method.Invoke(null, new object[] { args[0] });
+    timer.Dispose();
+    if (failure != null) { Console.Error.WriteLine(failure.Message); return 5; }
+    return failedStateObserved && !accepted ? 0 : 6;
+  }
+}
+''', encoding='utf-8')
+            harness = root / 'OnlineInstallHarness.exe'
+            compiled = subprocess.run([str(_framework_csc()), '/nologo', '/target:exe',
+                                       '/main:OnlineInstallHarness', '/reference:System.Windows.Forms.dll',
+                                       '/reference:System.Web.Extensions.dll',
+                                       '/out:' + str(harness), str(ROOT / 'app/Launcher.cs'), str(harness_source)],
+                                      capture_output=True, timeout=60)
+            self.assertEqual(compiled.returncode, 0, compiled.stdout + compiled.stderr)
+            run = subprocess.run([str(harness), str(root), str(mock_fail)], capture_output=True, timeout=30)
+            self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -589,11 +589,17 @@ def compatibility_facts(source_root):
     cache = (source_root / "core" / "cache_fingerprint.py").read_text(encoding="utf-8")
     profile = json.loads((source_root / "packaging" / "portable_profile.json").read_text(encoding="utf-8"))
     job_tree, cache_tree = ast.parse(job), ast.parse(cache)
+    def _is_schema_slice(slice_node):
+        if isinstance(slice_node, ast.Constant):
+            return slice_node.value == 'schema_version'
+        if hasattr(slice_node, 'value') and isinstance(slice_node.value, ast.Constant):
+            return slice_node.value.value == 'schema_version'
+        return False
+
     schema = next((node.value.value for node in ast.walk(job_tree)
                    if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant)
                    and any(isinstance(target, ast.Subscript)
-                           and isinstance(target.slice, ast.Constant)
-                           and target.slice.value == 'schema_version' for target in node.targets)), None)
+                           and _is_schema_slice(target.slice) for target in node.targets)), None)
     stage_contract = None
     for node in ast.walk(cache_tree):
         if isinstance(node, ast.keyword) and node.arg == 'stage_contract_version' and isinstance(node.value, ast.Constant):

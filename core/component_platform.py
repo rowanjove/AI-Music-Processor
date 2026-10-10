@@ -612,7 +612,7 @@ def _is_inside(root, path):
     return True
 
 
-def capability_report(registry):
+def capability_report(registry, runtime_verification=None):
     """Resolve mode packs from registry status. This function changes nothing."""
     catalog = registry["catalog"]
     components = registry["components"]
@@ -631,6 +631,13 @@ def capability_report(registry):
             "providers": items,
         }
     modes = {}
+    allowed_by_gate = None
+    if isinstance(runtime_verification, dict):
+        if runtime_verification.get("status") in ("PASS", "PASS_WITH_WARNINGS"):
+            allowed_by_gate = set(runtime_verification.get("allowed_modes") or MODES)
+        elif runtime_verification.get("status") == "FAIL":
+            allowed_by_gate = set()
+
     for component in catalog["components"]:
         if component["kind"] != "mode_pack":
             continue
@@ -640,12 +647,60 @@ def capability_report(registry):
         group_ready = [item for item in group if components[item]["status"] == "PRESENT"]
         blocked = bool(missing) or (bool(group) and not group_ready) or not component["implemented"]
         mode_name = component["modes"][0]
+
+        missing_reasons = []
+        user_import_required = False
+        missing_components = False
+
+        for item in missing:
+            comp_spec = components.get(item, {})
+            kind = comp_spec.get("kind", "")
+            name = comp_spec.get("name", item)
+            ownership = comp_spec.get("ownership", "")
+            if kind == "model_scan" or ownership == "user" or "model" in item:
+                user_import_required = True
+                missing_reasons.append(f"需要导入模型权重: {name}")
+            elif kind == "runtime":
+                missing_components = True
+                missing_reasons.append(f"缺少运行时环境: {name}")
+            else:
+                missing_components = True
+                missing_reasons.append(f"缺少组件: {name}")
+
+        if not group_ready and group:
+            missing_reasons.append(f"缺少必要组件依赖组 (任选其一): {', '.join(group)}")
+            missing_components = True
+
+        gate_disallowed = (allowed_by_gate is not None and mode_name not in allowed_by_gate)
+
+        if allowed_by_gate is not None and len(allowed_by_gate) == 0:
+            display_status = "FAILED"
+            blocked = True
+        elif gate_disallowed:
+            blocked = True
+            if user_import_required and not missing_components:
+                display_status = "USER_IMPORT_REQUIRED"
+            else:
+                display_status = "MISSING_COMPONENTS"
+            if not missing_reasons:
+                missing_reasons.append(f"当前运行环境未授权模式 '{mode_name}'，需完整组件或 donor 离线安装")
+        elif blocked:
+            if user_import_required and not missing_components:
+                display_status = "USER_IMPORT_REQUIRED"
+            else:
+                display_status = "MISSING_COMPONENTS"
+        else:
+            display_status = "READY"
+
         modes[mode_name] = {
             "component_id": component["id"],
             "status": "BLOCKED" if blocked else "AVAILABLE",
+            "display_status": display_status,
             "missing": missing,
+            "missing_reasons": missing_reasons,
             "missing_any_group": [] if group_ready or not group else list(group),
             "dependencies": closure,
+            "allowed_by_gate": not gate_disallowed,
         }
     shared = {}
     for component_id in registry["component_order"]:

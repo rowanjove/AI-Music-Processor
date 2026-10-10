@@ -42,6 +42,12 @@ SOURCE_STATUSES = {"PINNED", "DERIVED", "USER_OWNED_ONLY", "UNAVAILABLE"}
 INSTALLABLE_KINDS = {"archive", "wheel", "python_installer", "ampkg"}
 FORBIDDEN_ROOTS = {"config", "output", "temp", "logs", "song", "models", "处理后"}
 POLISH_BOOTSTRAP_IDS = ("python.numpy", "python.scipy", "python.soundfile", "python.cffi", "python.pycparser", "python.mido", "python.packaging")
+SOURCE_STATUS_DESCRIPTIONS = {
+    "PINNED": "可官方在线下载（SHA-256已锁定）",
+    "DERIVED": "随源码或已安装依赖提供（无需单独下载）",
+    "UNAVAILABLE": "缺少可信公开来源（需同版本离线包导入）",
+    "USER_OWNED_ONLY": "用户自有资产（需自行导入权重文件）",
+}
 
 
 class OnlineComponentError(ValueError):
@@ -228,6 +234,7 @@ def plan(root, source_manifest, requested=None):
         rows.append({
             "component_id": component_id,
             "status": status,
+            "human_status": SOURCE_STATUS_DESCRIPTIONS.get(status, status),
             "kind": entry.get("kind"),
             "version": entry.get("version"),
             "reason": entry["reason"],
@@ -248,6 +255,7 @@ def plan(root, source_manifest, requested=None):
         rows.append({
             "component_id": package_id,
             "status": entry["status"],
+            "human_status": SOURCE_STATUS_DESCRIPTIONS.get(entry["status"], entry["status"]),
             "kind": entry.get("kind"),
             "version": entry.get("version"),
             "reason": entry["reason"],

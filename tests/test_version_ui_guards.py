@@ -60,3 +60,70 @@ class VersionUIGuardsTests(unittest.TestCase):
         self.assertIn('重新启动',app._audio_pipeline_busy_reason())
         app.run_benchmark();self.assertIn('重新启动',app.status.text)
         app.start();self.assertIn('重新启动',app.status.text)
+
+    def test_version_update_worker_dispatches_install_version_update(self):
+        import queue
+        from unittest.mock import patch
+        app = self.app()
+        app._audio_pipeline_busy_reason = lambda: None
+        app.events = queue.Queue()
+        dispatched_task = []
+        app._start_background_worker = lambda task, **kwargs: dispatched_task.append(task)
+        app._abort_scheduled_shutdown = lambda reason: True
+        app._refresh_component_mutation_controls = lambda: None
+
+        with patch('core.version_update.install_version_update') as mock_install:
+            mock_install.return_value = {'status': 'VERIFIED_READY'}
+            app._start_version_operation('source_path', 'target_path')
+            self.assertEqual(len(dispatched_task), 1)
+            dispatched_task[0]()
+            mock_install.assert_called_once()
+            self.assertEqual(mock_install.call_args[0][1], 'source_path')
+            self.assertEqual(mock_install.call_args[0][2], 'target_path')
+            kind, (result, error) = app.events.get_nowait()
+            self.assertEqual(kind, 'version_operation')
+            self.assertEqual(result, {'status': 'VERIFIED_READY'})
+            self.assertIsNone(error)
+
+    def test_version_rollback_worker_dispatches_rollback_previous_version(self):
+        import queue
+        from unittest.mock import patch
+        app = self.app()
+        app._audio_pipeline_busy_reason = lambda: None
+        app.events = queue.Queue()
+        dispatched_task = []
+        app._start_background_worker = lambda task, **kwargs: dispatched_task.append(task)
+        app._abort_scheduled_shutdown = lambda reason: True
+        app._refresh_component_mutation_controls = lambda: None
+
+        with patch('core.version_update.rollback_previous_version') as mock_rollback:
+            mock_rollback.return_value = {'status': 'VERIFIED_READY', 'action': 'rollback'}
+            app._start_version_operation()
+            self.assertEqual(len(dispatched_task), 1)
+            dispatched_task[0]()
+            mock_rollback.assert_called_once()
+            kind, (result, error) = app.events.get_nowait()
+            self.assertEqual(kind, 'version_operation')
+            self.assertEqual(result['action'], 'rollback')
+            self.assertIsNone(error)
+
+    def test_version_operation_exception_captured_in_events(self):
+        import queue
+        from unittest.mock import patch
+        from core.version_update import VersionUpdateError
+        app = self.app()
+        app._audio_pipeline_busy_reason = lambda: None
+        app.events = queue.Queue()
+        dispatched_task = []
+        app._start_background_worker = lambda task, **kwargs: dispatched_task.append(task)
+        app._abort_scheduled_shutdown = lambda reason: True
+        app._refresh_component_mutation_controls = lambda: None
+
+        with patch('core.version_update.install_version_update', side_effect=VersionUpdateError('test failure')):
+            app._start_version_operation('source_path', 'target_path')
+            dispatched_task[0]()
+            kind, (result, error) = app.events.get_nowait()
+            self.assertEqual(kind, 'version_operation')
+            self.assertEqual(result, {})
+            self.assertIsInstance(error, VersionUpdateError)
+            self.assertIn('test failure', str(error))

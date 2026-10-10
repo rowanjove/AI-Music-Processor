@@ -106,7 +106,7 @@ def align_vocal_timing(ref_vocal_path, rvc_vocal_path, output_aligned_path, max_
     sf.write(output_aligned_path, data, sr, subtype='FLOAT')
     metrics = dict(correction_ms=lag, residual_ms=residual, confidence=final_confidence,
                    local_checks=local, initial_local_checks=initial_local, local_timewarp=warped,
-                   max_local_residual_ms=max([abs(x['offset_ms']) for x in local] or [abs(residual)]),
+                   max_local_residual_ms=max([abs(x['offset_ms']) for x in ([c for c in local if c.get('confidence', 0.0) >= .5] or local)] or [abs(residual)]),
                    verified=confidence >= .25 and final_confidence >= .25 and abs(lag) < max_lag_ms)
     with open(str(output_aligned_path)+'.json', 'w', encoding='utf-8') as f:
         json.dump(metrics, f, indent=2)

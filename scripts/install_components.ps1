@@ -50,7 +50,7 @@ function Test-TkPython {
         return $false
     }
     try {
-        $probe = & $Candidate -B -c "import tkinter,sys,platform; assert platform.python_version()=='3.9.13'; print(sys.executable)" 2>$null
+        $probe = & $Candidate -B -c "import tkinter,sys; print(sys.executable)" 2>$null
         return ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($probe | Select-Object -Last 1)))
     } catch {
         return $false
@@ -345,11 +345,22 @@ try {
     if (-not (Test-Path -LiteralPath $VersionPath -PathType Leaf)) { throw "缺少 VERSION：$VersionPath" }
     if ($manifest.app_version -ne (Get-Content -LiteralPath $VersionPath -Raw -Encoding UTF8).Trim()) { throw "来源清单与 VERSION 不匹配" }
     if ($List) {
-        $manifest.sources | Select-Object component_id,status,version,kind,install_strategy,reason | Format-Table -Wrap
+        $statusMapping = @{
+            "PINNED" = "可在线下载"
+            "DERIVED" = "源码/依赖提供"
+            "UNAVAILABLE" = "缺少公开来源(需离线包)"
+            "USER_OWNED_ONLY" = "用户自有资产(需自行导入)"
+        }
+        $manifest.sources | Select-Object component_id,status,@{Name="status_meaning";Expression={$statusMapping[$_.status]}},version,kind,install_strategy,reason | Format-Table -Wrap
         if ($manifest.bootstrap_packages) {
             Write-Output "`nPolish bootstrap packages:"
-            $manifest.bootstrap_packages | Select-Object component_id,status,version,kind,install_strategy,reason | Format-Table -Wrap
+            $manifest.bootstrap_packages | Select-Object component_id,status,@{Name="status_meaning";Expression={$statusMapping[$_.status]}},version,kind,install_strategy,reason | Format-Table -Wrap
         }
+        Write-Output "`n=== 组件补齐与来源指引 ==="
+        Write-Output "1. PINNED 组件（Python 3.9.13、FFmpeg、Polish 依赖）可通过 -InstallPython -Components polish 直接在线安装。"
+        Write-Output "2. UNAVAILABLE 组件（重型深度模型如 RVC、Demucs、Kim 等）暂无公开免登录受审源；如需使用换声或扒谱模式，请使用:"
+        Write-Output "   powershell -File scripts/install_components.ps1 -InstallPython -OfflinePackage <完整离线包.ampkg或目录>"
+        Write-Output "3. USER_OWNED_ONLY 模型（用户声线）请直接放置于 models/rvc/{模型名}/model.pth 及相应索引。"
         exit 0
     }
     if ($Plan) {

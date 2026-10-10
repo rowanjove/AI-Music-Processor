@@ -86,7 +86,7 @@ def transcribe(input_path, output_path, bpm):
     midi.write(output_path)
     with open(output_path+'.json','w',encoding='utf-8') as f:
         json.dump(dict(engine='Basic Pitch 0.4.0 ONNX', bpm=bpm, note_count=total, quantization='1/32',
-                       accuracy='需要人工修谱；不保证恢复所有配器'), f, ensure_ascii=False, indent=2)
+                       accuracy='旋律草稿/需人工修谱；不声称自动还原整曲总谱'), f, ensure_ascii=False, indent=2)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()

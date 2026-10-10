@@ -1,0 +1,81 @@
+name: CI & Packaging Gates
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  fast-ci:
+    name: Fast CI Check (Syntax, Manifests, Tier 1)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Run Fast CI Check
+        run: |
+          python -u scripts/ci_fast_check.py
+
+  windows-packaging-gate:
+    name: Windows Lightweight Packaging & Verification Gate
+    runs-on: windows-latest
+    needs: fast-ci
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Verify C# Compiler (csc.exe) Availability
+        shell: powershell
+        run: |
+          $candidates = @(
+            "$env:SystemRoot\Microsoft.NET\Framework64\v4.0.30319\csc.exe",
+            "$env:SystemRoot\Microsoft.NET\Framework\v4.0.30319\csc.exe"
+          )
+          $compiler = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $compiler) {
+            Write-Error "Required .NET Framework C# compiler (csc.exe) not found on runner."
+            exit 1
+          }
+          Write-Host "Using C# compiler: $compiler"
+          & $compiler /version
+
+      - name: Build Lightweight Distribution ZIP
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $version = (Get-Content -Path VERSION -Raw).Trim()
+          $zipPath = "dist/AI-Music-Processor-v$version-Lightweight-win-x64.zip"
+          Write-Host "Building lightweight release at $zipPath..."
+          python -u scripts/build_lightweight.py --output $zipPath
+          if (-not (Test-Path $zipPath)) {
+            Write-Error "Build failed: $zipPath not generated."
+            exit 1
+          }
+          Write-Host "Successfully generated: $zipPath (Size: $((Get-Item $zipPath).Length) bytes)"
+
+      - name: Run Packaging & Lightweight Delivery Tests
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "."
+          python -m unittest discover -s tests -p "test_packaging.py" -v
+          python -m unittest discover -s tests -p "test_lightweight_delivery.py" -v
+
+      - name: Upload Lightweight Build Artifact (Testing Only, No Auto-Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Music-Processor-Lightweight-win-x64
+          path: dist/*.zip
+          if-no-files-found: error

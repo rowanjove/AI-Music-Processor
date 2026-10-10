@@ -84,6 +84,9 @@ def main(argv=None):
         if not job:parser.error('找不到任务')
         files=[job['source_path']]
     if not files:parser.error('请传入音频，或使用 --resume / --diagnose')
+    if runtime_result and 'allowed_modes' in runtime_result and args.mode not in runtime_result['allowed_modes']:
+        print(f"错误: 当前运行环境限制允许的模式为 {runtime_result['allowed_modes']}，无法执行模式 '{args.mode}'。请配置完整离线组件。", file=sys.stderr)
+        raise SystemExit(1)
     failures=0
     try:
         for path in files:

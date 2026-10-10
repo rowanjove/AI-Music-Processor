@@ -17,6 +17,14 @@ if str(ROOT) not in sys.path:
 from scripts import freeze_runtime as freeze
 
 
+def _is_relative_to(path: Path, other: Path) -> bool:
+    try:
+        path.resolve().relative_to(other.resolve())
+        return True
+    except ValueError:
+        return False
+
+
 class RuntimeManifestTests(unittest.TestCase):
     def _write(self, root, relative, content):
         root = Path(root).resolve(strict=True)
@@ -25,9 +33,9 @@ class RuntimeManifestTests(unittest.TestCase):
             raise AssertionError("fixture writes require a bounded absolute temporary root")
         path = relative if relative.is_absolute() else root / relative
         path = path.resolve()
-        if not path.is_relative_to(root):
+        if not _is_relative_to(path, root):
             raise AssertionError("fixture output escaped its temporary root")
-        if not path.parent.resolve().is_relative_to(root):
+        if not _is_relative_to(path.parent.resolve(), root):
             raise AssertionError("fixture output escaped its temporary root")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content if isinstance(content, bytes) else content.encode("utf-8"))
@@ -39,7 +47,7 @@ class RuntimeManifestTests(unittest.TestCase):
         metadata = self._write(root, info_root / "METADATA", "Metadata-Version: 2.1\nName: %s\nVersion: %s\n\n" % (name, version))
         top_level = self._write(root, info_root / "top_level.txt", module_name + "\n")
         record = info_root / "RECORD"
-        if not record.resolve().is_relative_to(root.resolve()):
+        if not _is_relative_to(record.resolve(), root.resolve()):
             raise AssertionError("fixture metadata output escaped its temporary root")
         record.parent.mkdir(parents=True, exist_ok=True)
         with record.open("w", encoding="utf-8", newline="") as handle:

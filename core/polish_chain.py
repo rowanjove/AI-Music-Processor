@@ -50,16 +50,33 @@ def _dump(path, payload):
     return path
 
 
+STAGE_STATUS_PROCESSED = "PROCESSED"
+STAGE_STATUS_BYPASSED_BY_POLICY = "BYPASSED_BY_POLICY"
+STAGE_STATUS_BYPASSED_BY_ERROR = "BYPASSED_BY_ERROR"
+STAGE_STATUS_FAILED = "FAILED"
+
+
 def render_stage(kind, source_wav, dest_wav, report, policy, reference=None, reference_rate=None):
-    """Run one polish stage. A non-finite buffer stops. Any other failure bypasses."""
+    """Run one polish stage.
+
+    Returns structured status:
+      - PROCESSED: stage ran DSP operations and wrote modified audio.
+      - BYPASSED_BY_POLICY: stage was skipped by configuration or clean analysis.
+      - BYPASSED_BY_ERROR: stage encountered an unexpected DSP exception; original
+        audio was preserved, and a searchable warning was logged.
+    I/O errors, invalid inputs, and NonFiniteAudio stop without bypass.
+    """
     policy = clamp_policy(policy)
+    audio, sample_rate = _read(source_wav)
+    if report is None:
+        report = analyze_polish_buffer(audio, sample_rate)
+    if report.get("repair", {}).get("nan_inf") or not np.isfinite(audio).all():
+        raise NonFiniteAudio("音频包含 NaN/Inf")
+    if kind not in ("repair", "tone", "dynamics", "stereo"):
+        raise ValueError("未知精修阶段: " + str(kind))
+
+    decisions = route_polish(report, policy)
     try:
-        audio, sample_rate = _read(source_wav)
-        if report is None:
-            report = analyze_polish_buffer(audio, sample_rate)
-        if report.get("repair", {}).get("nan_inf") or not np.isfinite(audio).all():
-            raise NonFiniteAudio("音频包含 NaN/Inf")
-        decisions = route_polish(report, policy)
         if kind == "repair":
             processed, info = apply_repair(audio, sample_rate, report, policy, decisions)
         elif kind == "tone":
@@ -68,21 +85,64 @@ def render_stage(kind, source_wav, dest_wav, report, policy, reference=None, ref
             processed, info = apply_dynamics(audio, sample_rate, report, policy, decisions)
         elif kind == "stereo":
             processed, info = apply_stereo_stage(audio, sample_rate, report, policy, decisions)
-        else:
-            raise ValueError("未知精修阶段")
-        if info.get("bypassed"):
-            shutil.copyfile(source_wav, dest_wav)
-        else:
-            _write(dest_wav, processed, sample_rate)
-        decision_path = _dump(_decision_path(dest_wav), {"stage": kind, "decisions": decisions, "info": info, "warning": info.get("warning")})
-        return {"wav": dest_wav, "decision_path": decision_path, "warning": info.get("warning")}
     except NonFiniteAudio:
         raise
     except Exception as exc:
         shutil.copyfile(source_wav, dest_wav)
         warning = type(exc).__name__ + ": " + str(exc)
-        decision_path = _dump(_decision_path(dest_wav), {"stage": kind, "bypassed": True, "warning": warning})
-        return {"wav": dest_wav, "decision_path": decision_path, "warning": warning}
+        decision_path = _dump(_decision_path(dest_wav), {
+            "stage": kind,
+            "status": STAGE_STATUS_BYPASSED_BY_ERROR,
+            "stage_status": STAGE_STATUS_BYPASSED_BY_ERROR,
+            "bypassed": True,
+            "degraded": True,
+            "warning": warning,
+            "error": str(exc),
+            "error_type": type(exc).__name__,
+        })
+        return {
+            "wav": dest_wav,
+            "decision_path": decision_path,
+            "status": STAGE_STATUS_BYPASSED_BY_ERROR,
+            "stage_status": STAGE_STATUS_BYPASSED_BY_ERROR,
+            "bypassed": True,
+            "degraded": True,
+            "warning": warning,
+            "error": str(exc),
+        }
+
+    if not np.isfinite(processed).all():
+        raise NonFiniteAudio(f"精修阶段 {kind} 计算产物包含 NaN/Inf")
+
+    if info.get("bypassed"):
+        shutil.copyfile(source_wav, dest_wav)
+        status = STAGE_STATUS_BYPASSED_BY_POLICY
+        bypassed = True
+    else:
+        _write(dest_wav, processed, sample_rate)
+        status = STAGE_STATUS_PROCESSED
+        bypassed = False
+
+    warning = info.get("warning")
+    decision_path = _dump(_decision_path(dest_wav), {
+        "stage": kind,
+        "status": status,
+        "stage_status": status,
+        "bypassed": bypassed,
+        "degraded": False,
+        "decisions": decisions,
+        "info": info,
+        "warning": warning,
+    })
+    return {
+        "wav": dest_wav,
+        "decision_path": decision_path,
+        "status": status,
+        "stage_status": status,
+        "bypassed": bypassed,
+        "degraded": False,
+        "warning": warning,
+    }
 
 
 def render_polish_files(source_wav, directory, policy=None, reference_path=None):
@@ -112,7 +172,25 @@ def render_polish_files(source_wav, directory, policy=None, reference_path=None)
     dynamics_result = render_stage("dynamics", tone, dynamics, report, policy)
     stereo_result = render_stage("stereo", dynamics, stereo, report, policy)
     decisions = route_polish(report, policy)
-    summary = _dump(os.path.join(directory, "polish_decision.json"), {"decisions": decisions, "no_problem": decisions.get("no_problem")})
+
+    stages_results = {
+        "repair": repair,
+        "tone": tone_result,
+        "dynamics": dynamics_result,
+        "stereo": stereo_result,
+    }
+    degraded_stages = [
+        name for name, res in stages_results.items()
+        if res.get("degraded") or res.get("status") == STAGE_STATUS_BYPASSED_BY_ERROR
+    ]
+    summary_data = {
+        "decisions": decisions,
+        "no_problem": decisions.get("no_problem"),
+        "has_degradation": bool(degraded_stages),
+        "degraded_stages": degraded_stages,
+        "stage_statuses": {name: res.get("status") for name, res in stages_results.items()},
+    }
+    summary = _dump(os.path.join(directory, "polish_decision.json"), summary_data)
     return {
         "source": source,
         "repaired": repaired,
@@ -125,4 +203,6 @@ def render_polish_files(source_wav, directory, policy=None, reference_path=None)
         "dynamics_stage": dynamics_result,
         "stereo_stage": stereo_result,
         "decisions": decisions,
+        "degraded_stages": degraded_stages,
+        "has_degradation": bool(degraded_stages),
     }

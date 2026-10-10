@@ -1,9 +1,10 @@
-"""Polish 2.0 behavior. These tests call the shipped functions on real buffers."""
+import json
 import math
 import os
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 import soundfile as sf
@@ -604,6 +605,94 @@ class PolishSurfaceTests(unittest.TestCase):
         manifest = ab_manifest({"source": "missing.wav"}, {"inference_ran": True, "artifact": "master.wav"}, None)
         self.assertEqual(manifest["quality_acceptance"], EXTERNAL)
         self.assertEqual(manifest["listening_quality"], "not_assessed")
+
+    def test_render_stage_structured_statuses_and_error_degradation(self):
+        import tempfile, soundfile as sf
+        from pathlib import Path
+        from unittest.mock import patch
+        from core.polish_chain import (
+            render_stage,
+            STAGE_STATUS_PROCESSED,
+            STAGE_STATUS_BYPASSED_BY_POLICY,
+            STAGE_STATUS_BYPASSED_BY_ERROR,
+        )
+        from core.polish_dsp import NonFiniteAudio
+        from core.polish_policy import default_policy
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            src_clean = tmp_path / "src_clean.wav"
+            t = np.linspace(0, 1, 48000, endpoint=False)
+            clean_audio = np.stack([0.5 * np.sin(2 * np.pi * 440 * t), 0.5 * np.sin(2 * np.pi * 440 * t)], axis=-1).astype(np.float32)
+            sf.write(str(src_clean), clean_audio, 48000)
+
+            src_clipped = tmp_path / "src_clipped.wav"
+            clipped_audio = np.stack([np.sin(2 * np.pi * 440 * t), np.sin(2 * np.pi * 440 * t)], axis=-1).astype(np.float32)
+            sf.write(str(src_clipped), clipped_audio, 48000)
+
+            policy = default_policy("balanced")
+
+            # 1. BYPASSED_BY_POLICY: clean unclipped tone has no clicks or clipping to repair
+            dest_repair_clean = tmp_path / "repair_clean.wav"
+            res_repair_clean = render_stage("repair", str(src_clean), str(dest_repair_clean), None, policy)
+            self.assertEqual(res_repair_clean["status"], STAGE_STATUS_BYPASSED_BY_POLICY)
+            self.assertTrue(res_repair_clean["bypassed"])
+            self.assertFalse(res_repair_clean["degraded"])
+
+            # 2. PROCESSED: clipped tone triggers repair declip processing
+            dest_repair_clipped = tmp_path / "repair_clipped.wav"
+            res_repair_clipped = render_stage("repair", str(src_clipped), str(dest_repair_clipped), None, policy)
+            self.assertEqual(res_repair_clipped["status"], STAGE_STATUS_PROCESSED)
+            self.assertFalse(res_repair_clipped["bypassed"])
+            self.assertFalse(res_repair_clipped["degraded"])
+
+            # 3. BYPASSED_BY_ERROR: simulated DSP failure
+            dest_error = tmp_path / "error.wav"
+            with patch("core.polish_chain.apply_dynamics", side_effect=ZeroDivisionError("simulated DSP filter singularity")):
+                res_error = render_stage("dynamics", str(src_clean), str(dest_error), None, policy)
+                self.assertEqual(res_error["status"], STAGE_STATUS_BYPASSED_BY_ERROR)
+                self.assertTrue(res_error["bypassed"])
+                self.assertTrue(res_error["degraded"])
+                self.assertIn("ZeroDivisionError", res_error["warning"])
+                dest_data, _ = sf.read(str(dest_error))
+                self.assertEqual(len(dest_data), len(clean_audio))
+
+            # 3. NonFiniteAudio input fails without bypass
+            bad_wav = tmp_path / "bad.wav"
+            bad_audio = clean_audio.copy()
+            bad_audio[100, 0] = np.nan
+            sf.write(str(bad_wav), bad_audio, 48000, subtype="FLOAT")
+            with self.assertRaises(NonFiniteAudio):
+                render_stage("repair", str(bad_wav), str(tmp_path / "out.wav"), None, policy)
+
+            # 4. Missing input WAV fails closed
+            with self.assertRaises((FileNotFoundError, RuntimeError)):
+                render_stage("repair", str(tmp_path / "missing.wav"), str(tmp_path / "out.wav"), None, policy)
+
+    def test_polish_pipeline_cache_and_decision_transparency_on_degradation(self):
+        import tempfile, soundfile as sf
+        from unittest.mock import patch
+        from core.polish_chain import render_polish_files
+        from core.polish_policy import default_policy
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            src_wav = tmp_path / "song.wav"
+            t = np.linspace(0, 1, 48000, endpoint=False)
+            audio = np.stack([0.3 * np.sin(2 * np.pi * 440 * t), 0.3 * np.sin(2 * np.pi * 440 * t)], axis=-1).astype(np.float32)
+            sf.write(str(src_wav), audio, 48000)
+
+            out_dir = tmp_path / "out"
+            with patch("core.polish_chain.apply_dynamics", side_effect=ValueError("simulated dynamics failure")):
+                res = render_polish_files(str(src_wav), str(out_dir), default_policy("balanced"))
+                self.assertTrue(res["has_degradation"])
+                self.assertIn("dynamics", res["degraded_stages"])
+                self.assertTrue(Path(res["summary"]).is_file())
+                summary_data = json.loads(Path(res["summary"]).read_text(encoding="utf-8"))
+                self.assertTrue(summary_data["has_degradation"])
+                self.assertIn("dynamics", summary_data["degraded_stages"])
+                self.assertEqual(summary_data["stage_statuses"]["dynamics"], "BYPASSED_BY_ERROR")
+                self.assertTrue(Path(res["dynamics"]).is_file())
 
 
 if __name__ == "__main__":

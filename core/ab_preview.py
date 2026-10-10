@@ -27,7 +27,7 @@ def project_audio_roles(project):
     return roles
 
 
-def prepare_ab_preview(source,directory,start_seconds=0.,duration_seconds=30.):
+def prepare_ab_preview(source,directory,start_seconds=0.,duration_seconds=30.,target_rms=None):
     start,duration=float(start_seconds),float(duration_seconds)
     if not math.isfinite(start) or start<0 or not math.isfinite(duration) or not 0<duration<=30:
         raise ValueError('试听起点必须非负，片段长度须为 0–30 秒')
@@ -48,9 +48,26 @@ def prepare_ab_preview(source,directory,start_seconds=0.,duration_seconds=30.):
         if info.frames<=0 or info.duration>duration+.025 or info.samplerate!=48000:
             raise ValueError('试听片段为空或长度/采样率异常，请选择音频范围内的起点')
         if sha256_file(source)!=before:raise ValueError('试听准备期间源音频发生变化')
+
+        import numpy as np
+        data,sr=sf.read(target,always_2d=True)
+        current_rms=float(np.sqrt(np.mean(data**2)))
+        loudness_matched=False
+        if target_rms is not None and math.isfinite(float(target_rms)) and float(target_rms)>0:
+            if current_rms>1e-7:
+                scale=float(target_rms)/current_rms
+                max_abs=float(np.max(np.abs(data)))
+                if max_abs*scale>0.98:
+                    scale=0.98/max(max_abs,1e-7)
+                matched_data=data*scale
+                sf.write(target,matched_data,48000,subtype='PCM_16')
+                current_rms=float(np.sqrt(np.mean(matched_data**2)))
+                loudness_matched=True
+
         record={'source_path':str(source),'source_sha256':before,'preview_path':str(target),
             'preview_sha256':sha256_file(target),'start_seconds':start,'duration_seconds':info.duration,
-            'sample_rate':48000,'channels':2,'source_modified':False,
+            'sample_rate':48000,'channels':2,'source_modified':False,'rms':current_rms,
+            'loudness_matched':loudness_matched,
             'channel_mapping':'duplicate_mono' if source_channels==1 else ('stereo' if source_channels==2 else 'stereo_downmix'),
             'quality_acceptance':'READY_FOR_EXTERNAL_VALIDATION','listening_quality':'not_assessed'}
         Path(str(target)+'.json').write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
@@ -58,6 +75,15 @@ def prepare_ab_preview(source,directory,start_seconds=0.,duration_seconds=30.):
     except Exception:
         target.unlink(missing_ok=True)
         raise
+
+
+def prepare_ab_pair(source_a,source_b,directory,start_seconds=0.,duration_seconds=30.,match_loudness=True):
+    """Prepare a loudness-matched same-start A/B pair to avoid 'louder is better' bias."""
+    rec_a=prepare_ab_preview(source_a,directory,start_seconds,duration_seconds)
+    target_rms=rec_a.get('rms') if match_loudness else None
+    rec_b=prepare_ab_preview(source_b,directory,start_seconds,duration_seconds,target_rms=target_rms)
+    return rec_a,rec_b
+
 
 
 def play_ab_preview(record):

@@ -332,6 +332,35 @@ class ComponentPlatformTests(unittest.TestCase):
         self.assertNotIn("verify_runtime", registry_source)
         self.assertNotIn("pipeline", registry_source)
 
+    def test_capability_report_with_runtime_verification_and_reasons(self):
+        registry = build_registry(ROOT)
+        # 1. Without runtime_verification
+        report_default = capability_report(registry)
+        for mode in ("polish", "voice_conversion", "transcribe"):
+            self.assertIn("display_status", report_default["modes"][mode])
+            self.assertIn("missing_reasons", report_default["modes"][mode])
+            self.assertIn("allowed_by_gate", report_default["modes"][mode])
+            self.assertTrue(report_default["modes"][mode]["allowed_by_gate"])
+
+        # 2. With Polish-only gate
+        gate_polish = {"status": "PASS", "allowed_modes": ["polish"]}
+        report_polish = capability_report(registry, runtime_verification=gate_polish)
+        self.assertEqual(report_polish["modes"]["polish"]["display_status"], "READY")
+        self.assertTrue(report_polish["modes"]["polish"]["allowed_by_gate"])
+        self.assertFalse(report_polish["modes"]["voice_conversion"]["allowed_by_gate"])
+        self.assertEqual(report_polish["modes"]["voice_conversion"]["status"], "BLOCKED")
+        self.assertIn(report_polish["modes"]["voice_conversion"]["display_status"],
+                      ("MISSING_COMPONENTS", "USER_IMPORT_REQUIRED"))
+        self.assertFalse(report_polish["modes"]["transcribe"]["allowed_by_gate"])
+        self.assertEqual(report_polish["modes"]["transcribe"]["status"], "BLOCKED")
+
+        # 3. With failed gate
+        gate_fail = {"status": "FAIL"}
+        report_fail = capability_report(registry, runtime_verification=gate_fail)
+        for mode in ("polish", "voice_conversion", "transcribe"):
+            self.assertEqual(report_fail["modes"][mode]["display_status"], "FAILED")
+            self.assertEqual(report_fail["modes"][mode]["status"], "BLOCKED")
+
 
 if __name__ == "__main__":
     unittest.main()

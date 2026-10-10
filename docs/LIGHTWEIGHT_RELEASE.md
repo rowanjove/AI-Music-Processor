@@ -79,9 +79,27 @@ donor、分片 `.ampkg` 或用户配置的内部缓存。
 
 固定来源位于 packaging/editor-sources.json：Audacity 3.7.7、LMMS 1.2.2、MuseScore 4.6.5、NeuralNote 2.0.0。下载必须匹配 SHA-256 和大小。Audacity 使用官方 ZIP；其余使用官方 NSIS、MSI 或 Inno 安装器。安装完成必须找到唯一有效 PE 主程序才登记成功。安装器可能需要 Windows 提权确认；失败返回非零码并保留原编辑器设置。
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File scripts/install_components.ps1 -Components tool.audacity
 powershell -ExecutionPolicy Bypass -File scripts/install_components.ps1 -Components editors
-`
+```
 
 音频/MIDI 导入和人工听审仍是 READY_FOR_EXTERNAL_VALIDATION；下载安装包不代表这些验收通过。
+
+
+## Release 资产命名与版本对应规范
+
+发布物统一采用如下命名与版本映射规则：
+1. **Release 资产命名规则**：
+   - 轻量源码分发包：`AI-Music-Processor-{version}-github-source-win-x64.zip`
+   - 校验和清单：`AI-Music-Processor-{version}-github-source-win-x64-SHA256SUMS.txt`
+   - 完整便携离线包（如制作）：`AI-Music-Processor-{version}-portable-win-x64.zip`
+2. **包内版本与配置对应**：
+   - 压缩包根目录 `VERSION`：记录当前发布版本号（例如 `1.0.0-local.20261009`，或正式语义版本 `1.0.1`）。
+   - `lightweight-manifest.json` 的 `version`：与 `VERSION` 文件完全一致。
+   - `packaging/download-sources.json` 的 `app_version`：与 `VERSION` 文件完全一致。
+   - GUI 与 CLI 展示版本：读取 `VERSION` 文件。
+3. **Git Tag 与发布说明**：
+   - 发布标签格式为 `v{major}.{minor}.{patch}`（例如未来发布的 `v1.0.1`）；
+   - 注意：当前稳定化实施阶段保持既有版本与本地标识，严禁提前创建、修改或推送 Tag；
+   - 正式发布时，Git Tag 必须与 `VERSION`、清单版本及 Release 资产名称保持严格的一对一对应。

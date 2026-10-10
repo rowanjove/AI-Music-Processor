@@ -136,6 +136,9 @@ def build_mode_flow_panel(parent, mode, generate_midi=False, source_preclean=Fal
         width=max(frame.winfo_width(),300)
         cell=max([label.winfo_reqwidth()+6 for label in frame.stage_labels.values()] or [100])
         columns=max(1,width//cell)
+        if getattr(frame, '_last_columns', None) == columns:
+            return
+        frame._last_columns = columns
         for index,label in enumerate(frame.stage_labels.values()):
             label.grid(row=index//columns,column=index%columns,sticky='w',padx=3,pady=2)
     frame.bind('<Configure>',arrange)
@@ -149,6 +152,9 @@ def wrap_button_row(frame):
         children=frame.winfo_children()
         if not children:return
         width=max(frame.winfo_width(),300)
+        if getattr(frame, '_last_arrange_width', None) == width:
+            return
+        frame._last_arrange_width = width
         x,row,column=0,0,0
         for child in children:child.pack_forget()
         for child in children:
@@ -702,7 +708,11 @@ class AIMusicProcessorApp(tk.Tk):
         self.result_surface='queue'
         self.tree.bind('<<TreeviewSelect>>',lambda event:setattr(self,'result_surface','queue'))
         self.tree.bind('<<TreeviewSelect>>',self.preview_pending_source,add='+')
+        self.tree.bind('<<TreeviewSelect>>',self.on_select_result,add='+')
+        self.tree.bind('<Double-Button-1>',lambda e:self.show_qc_details())
         self.history_tree.bind('<<TreeviewSelect>>',lambda event:setattr(self,'result_surface','history'))
+        self.history_tree.bind('<<TreeviewSelect>>',self.on_select_result,add='+')
+        self.history_tree.bind('<Double-Button-1>',lambda e:self.show_qc_details())
         self.load_queue()
         self.refresh_history()
         for warning in self.config_warnings:
@@ -727,7 +737,8 @@ class AIMusicProcessorApp(tk.Tk):
         self.runtime_status=ttk.Label(startup,text='运行环境：已就绪' if self.runtime_gate is None else '运行环境：等待后台校验，可先设置参数')
         self.runtime_status.pack(side='left',fill='x',expand=True)
         self.runtime_progress=ttk.Progressbar(startup,mode='indeterminate',length=130)
-        self.runtime_progress.pack(side='left',padx=6)
+        if self.runtime_gate is not None:
+            self.runtime_progress.pack(side='left',padx=6)
         self.runtime_retry_button=ttk.Button(startup,text='重新校验',command=self.begin_runtime_check)
         self.runtime_retry_button.pack(side='right')
         notebook=ttk.Notebook(self)
@@ -741,7 +752,11 @@ class AIMusicProcessorApp(tk.Tk):
         home=ttk.Frame(self.home_canvas,padding=12)
         home_item=self.home_canvas.create_window((0,0),window=home,anchor='nw')
         home.bind('<Configure>',lambda event:self.home_canvas.configure(scrollregion=self.home_canvas.bbox('all')))
-        self.home_canvas.bind('<Configure>',lambda event:self.home_canvas.itemconfigure(home_item,width=event.width))
+        def _resize_home(event):
+            if getattr(self, '_last_home_canvas_w', None) != event.width:
+                self._last_home_canvas_w = event.width
+                self.home_canvas.itemconfigure(home_item,width=event.width)
+        self.home_canvas.bind('<Configure>',_resize_home)
         def home_wheel(event):
             class_query=getattr(event.widget,'winfo_class',None)
             if class_query is None:return
@@ -766,7 +781,11 @@ class AIMusicProcessorApp(tk.Tk):
         self.tools_content=tools
         tools_item=self.tools_canvas.create_window((0,0),window=tools,anchor='nw')
         tools.bind('<Configure>',lambda _event:self.tools_canvas.configure(scrollregion=self.tools_canvas.bbox('all')))
-        self.tools_canvas.bind('<Configure>',lambda event:self.tools_canvas.itemconfigure(tools_item,width=event.width))
+        def _resize_tools(event):
+            if getattr(self, '_last_tools_canvas_w', None) != event.width:
+                self._last_tools_canvas_w = event.width
+                self.tools_canvas.itemconfigure(tools_item,width=event.width)
+        self.tools_canvas.bind('<Configure>',_resize_tools)
         models=ttk.Frame(notebook,padding=12)
         self.settings_tab=models
         notebook.add(home_shell,text='处理与队列')
@@ -817,6 +836,7 @@ class AIMusicProcessorApp(tk.Tk):
         advanced.pack(fill='x',pady=5)
         transcribe_options=ttk.Frame(box);transcribe_options.pack(fill='x',pady=3)
         field(transcribe_options,'扒谱 / 生成 MIDI 使用轨',self.transcribe_stem,['vocal','bass','other'],8)
+        ttk.Label(transcribe_options,text='（旋律草稿/需人工修谱，不声称自动还原整曲总谱）').pack(side='left',padx=6)
         stem_row=ttk.Frame(advanced);stem_row.pack(fill='x',pady=3)
         ttk.Label(stem_row,text='混音：人声 / 伴奏 dB（-6～+6）').pack(side='left',padx=5)
         ttk.Entry(stem_row,textvariable=self.mix_vocal_gain,width=6).pack(side='left')
@@ -945,8 +965,9 @@ class AIMusicProcessorApp(tk.Tk):
         self.logbox=tk.Text(home,height=6,wrap='word');self.logbox.pack(fill='both',expand=True,pady=6)
         row=ttk.Frame(home);row.pack(fill='x')
         self.play_master_button=None
-        for label,cmd in [('打开项目',self.open_output),('试听原曲',lambda:self.play('source')),
+        for label,cmd in [('打开项目',self.open_output),('查看日志',self.show_logs_dialog),('试听原曲',lambda:self.play('source')),
                           ('试听母带',lambda:self.play('master')),('同起点 A/B',self.show_ab_preview),('换声质量诊断',self.show_stage_trace),
+                          ('质检详情',self.show_qc_details),('查看报告',self.open_report),
                           ('分析音域',self.analyze_selected_voice_range),
                           ('波形预览',self.preview_selected_waveform),
                           ('Audacity',lambda:self.editor('audacity')),
@@ -966,7 +987,8 @@ class AIMusicProcessorApp(tk.Tk):
         row=ttk.Frame(history);row.pack(fill='x',pady=8)
         for text,cmd in [('刷新',self.refresh_history),('继续 / 重试',self.resume_history),
                          ('新建重跑',self.rerun_history),('按当前设置重跑',self.rerun_history_current),
-                         ('打开目录',self.open_history),('复制设置',self.copy_history),
+                         ('打开目录',self.open_history),('质检详情',self.show_qc_details),
+                         ('查看报告',self.open_report),('复制设置',self.copy_history),
                          ('删除记录',self.hide_history),('显示已删除 / 恢复',self.toggle_deleted_history)]:
             ttk.Button(row,text=text,command=cmd).pack(side='left',padx=4)
         ttk.Label(history,text='新建重跑严格沿用历史快照；“按当前设置重跑”会明确使用当前界面参数。').pack(anchor='w')
@@ -1641,6 +1663,8 @@ class AIMusicProcessorApp(tk.Tk):
             elif kind=='runtime_check_done':
                 self.runtime_check_running=False
                 self.runtime_progress.stop()
+                if self.runtime_progress.winfo_ismapped():
+                    self.runtime_progress.pack_forget()
                 self.runtime_gate.finish(data)
                 self.runtime_retry_button.state(['!disabled'])
                 if self.runtime_gate.ready:
@@ -1772,7 +1796,21 @@ class AIMusicProcessorApp(tk.Tk):
                 self.result_manifests[key]=manifest
                 if not self.tree.selection() and not (self.__dict__.get('history_tree') and self.history_tree.selection()):
                     self.tree.selection_set(key)
-                self.tree.set(key,'state','完成 · QC '+manifest.get('qc',{}).get('status','Unknown'))
+                qc_info = manifest.get('qc', {}) if isinstance(manifest, dict) else {}
+                qc_status = qc_info.get('status', 'Unknown')
+                integrity = qc_info.get('processing_integrity', 'INTACT')
+                degraded = qc_info.get('degraded_stages') or []
+                if integrity == 'DEGRADED' or degraded:
+                    deg_names = [d.get('name', d.get('stage', '')) for d in degraded]
+                    deg_str = f" ({','.join(deg_names)})" if deg_names else ""
+                    self.tree.set(key, 'state', f"完成 · 降级警告{deg_str}")
+                    self.status.config(text=f"完成（带降级警告）：阶段异常已保留原音频，QC {qc_status}；查看质检详情或报告")
+                elif qc_status == 'WARN':
+                    self.tree.set(key, 'state', f"完成 · QC WARN")
+                    self.status.config(text=f"完成（带警告）：QC WARN；请试听或查看报告")
+                else:
+                    self.tree.set(key, 'state', f"完成 · QC {qc_status}")
+                    self.status.config(text=f"完成：QC {qc_status}")
                 pending_item=self.pending.pop(key,None)
                 if pending_item:
                     self.pending_paths.discard(str(Path(pending_item['path']).resolve()))
@@ -1781,6 +1819,8 @@ class AIMusicProcessorApp(tk.Tk):
             elif kind=='failed':
                 key,error=data;self.tree.set(key,'state','失败')
                 self.log(error)
+                self.last_failure_detail=str(error)
+                self.status.config(text='任务失败，请点击下方【查看日志】查看原因')
                 pending_item=self.pending.pop(key,None)
                 if pending_item:
                     self.pending_paths.discard(str(Path(pending_item['path']).resolve()))
@@ -1944,8 +1984,11 @@ class AIMusicProcessorApp(tk.Tk):
                 else:
                     if registry is not None:
                         from core.component_platform import capability_report
-                        modes=capability_report(registry).get('modes',{})
-                        text='模式状态：'+'；'.join(mode+' '+(modes.get(mode) or {}).get('status','UNKNOWN') for mode in ('polish','voice_conversion','transcribe'))
+                        gate_res=(self.__dict__.get('runtime_gate') and self.runtime_gate.result) or None
+                        modes=capability_report(registry,runtime_verification=gate_res).get('modes',{})
+                        status_map={'READY':'就绪','AVAILABLE':'就绪','MISSING_COMPONENTS':'缺少依赖','USER_IMPORT_REQUIRED':'需导入模型','FAILED':'校验未通过','BLOCKED':'不可用'}
+                        mode_labels={'polish':'精修','voice_conversion':'换声','transcribe':'扒谱'}
+                        text='模式状态：'+'；'.join(mode_labels.get(m,m)+' '+status_map.get((modes.get(m) or {}).get('display_status') or (modes.get(m) or {}).get('status','未知'),'未知') for m in ('polish','voice_conversion','transcribe'))
                         self.component_status.config(text=text)
                         if self.wizard_frame is not None:
                             self.wizard_frame.session.registry=registry
@@ -1993,6 +2036,8 @@ class AIMusicProcessorApp(tk.Tk):
         self.runtime_gate.state='PENDING'
         self.runtime_gate.cancelled.clear()
         self.runtime_check_running=True
+        if not self.runtime_progress.winfo_ismapped():
+            self.runtime_progress.pack(side='left',padx=6,after=self.runtime_status)
         self.runtime_progress.configure(mode='indeterminate')
         self.runtime_progress.start(12)
         self.runtime_retry_button.state(['disabled'])
@@ -2067,6 +2112,21 @@ class AIMusicProcessorApp(tk.Tk):
             if job.get('snapshot_error'):
                 status='参数快照损坏'
                 stage='请新建重跑'
+            elif status == 'DONE' and job.get('project_dir'):
+                pjson = os.path.join(job['project_dir'], 'project.json')
+                if os.path.isfile(pjson):
+                    try:
+                        with open(pjson, 'r', encoding='utf-8-sig') as f:
+                            mdata = json.load(f)
+                        qc = mdata.get('qc', {})
+                        if qc.get('processing_integrity') == 'DEGRADED' or qc.get('degraded_stages'):
+                            status = '完成 (降级警告)'
+                        elif qc.get('status') == 'WARN':
+                            status = '完成 (带警告)'
+                        elif qc.get('status') == 'PASS':
+                            status = '完成'
+                    except Exception:
+                        pass
             self.history_tree.insert('','end',iid=job['id'],values=(os.path.basename(job['source_path']),job['mode'],status,stage))
     def hide_history(self):
         job=self.selected_job()
@@ -2276,6 +2336,178 @@ class AIMusicProcessorApp(tk.Tk):
         except (OSError,ValueError,json.JSONDecodeError) as exc:
             self.log('项目结果读取失败：'+str(exc))
         return None
+
+    def on_select_result(self, event=None):
+        manifest = self.selected_manifest()
+        if not manifest:
+            return
+        qc = manifest.get('qc', {})
+        if not qc:
+            return
+        status = qc.get('status', 'Unknown')
+        integrity = qc.get('processing_integrity', 'INTACT')
+        degraded = qc.get('degraded_stages') or []
+        source_name = os.path.basename(manifest.get('source_path') or '当前项目')
+        if integrity == 'DEGRADED' or degraded:
+            stage_names = ', '.join([d.get('name', d.get('stage', '')) for d in degraded])
+            self.status.config(text=f"【{source_name}】完成但有降级警告：[{stage_names}] 异常已保留原音频；QC {status}；双击或点击“质检详情”查看")
+        elif status == 'WARN':
+            self.status.config(text=f"【{source_name}】完成但有指标警告：QC WARN；点击“质检详情”或“查看报告”")
+        elif status == 'PASS':
+            self.status.config(text=f"【{source_name}】处理完成：QC PASS (客观指标通过)")
+
+    def open_report(self):
+        manifest = self.selected_manifest()
+        if not manifest:
+            messagebox.showinfo('未选择结果', '请在队列或历史中选择一个已完成任务')
+            return
+        reports_dir = (manifest.get('output_paths') or {}).get('reports_dir')
+        candidates = []
+        if reports_dir:
+            candidates.append(os.path.join(reports_dir, 'process_report.md'))
+        job = self.selected_job()
+        if job and job.get('project_dir'):
+            candidates.append(os.path.join(job['project_dir'], 'reports', 'process_report.md'))
+        for c in candidates:
+            if os.path.isfile(c):
+                os.startfile(c)
+                return
+        messagebox.showinfo('未找到报告', '未找到质检报告 process_report.md')
+
+    def show_qc_details(self):
+        manifest = self.selected_manifest()
+        if not manifest:
+            messagebox.showinfo('未选择结果', '请在队列或历史中选择一个已完成任务')
+            return
+        qc = manifest.get('qc', {})
+        if not qc:
+            messagebox.showinfo('无质检数据', '该任务尚未记录质检数据')
+            return
+        window = tk.Toplevel(self)
+        window.title('质检与阶段执行状态')
+        window.geometry('680x520')
+
+        status = qc.get('status', 'Unknown')
+        integrity = qc.get('processing_integrity', 'INTACT')
+        degraded = qc.get('degraded_stages') or []
+        audio_metrics_passed = qc.get('audio_metrics_passed', status != 'FAIL')
+
+        header_frame = ttk.Frame(window, padding=10)
+        header_frame.pack(fill='x')
+        ttk.Label(header_frame, text=f"任务：{os.path.basename(manifest.get('source_path') or '当前项目')}", font=('', 10, 'bold')).pack(anchor='w')
+        ttk.Label(header_frame, text=f"综合 QC 状态：{status}   |   处理完整度：{integrity}   |   物理指标：{'通过' if audio_metrics_passed else '未通过'}").pack(anchor='w', pady=4)
+
+        body = tk.Text(window, wrap='word', padx=10, pady=10)
+        body.pack(fill='both', expand=True, padx=10, pady=5)
+
+        lines = []
+        if integrity == 'DEGRADED' or degraded:
+            lines.append("【阶段降级警告】")
+            lines.append("以下处理阶段在运行中捕获异常并自动降级，已安全保留原音频，未写入破坏数据：\n")
+            for deg in degraded:
+                lines.append(f"• 阶段：{deg.get('name', deg.get('stage'))}")
+                lines.append(f"  - 预定任务：{deg.get('intended_action', '未知')}")
+                lines.append(f"  - 降级原因：{deg.get('reason', '未知异常')}")
+                lines.append(f"  - 音频保护：{'已保留前阶段有效音频' if deg.get('source_preserved', True) else '未确认'}")
+                lines.append(f"  - 重试建议：{'可重新运行该阶段' if deg.get('retryable', True) else '不可自动重试'}\n")
+        else:
+            lines.append("【处理完整度正常】全部阶段完整执行，无异常降级。\n")
+
+        issues = qc.get('issues') or []
+        failures = qc.get('failures') or []
+        if failures:
+            lines.append("【客观阻断失败 (Failures)】")
+            for f in failures:
+                lines.append(f"• {f}")
+            lines.append("")
+        if issues:
+            lines.append("【客观警告与提示 (Issues)】")
+            for iss in issues:
+                lines.append(f"• {iss}")
+            lines.append("")
+
+        body.insert('1.0', '\n'.join(lines))
+        body.config(state='disabled')
+
+        btn_bar = ttk.Frame(window, padding=10)
+        btn_bar.pack(fill='x')
+        ttk.Button(btn_bar, text='打开完整 Markdown 报告', command=self.open_report).pack(side='left')
+        ttk.Button(btn_bar, text='关闭', command=window.destroy).pack(side='right')
+
+    def show_logs_dialog(self):
+        """打开运行日志弹窗，并提供一键定位日志文件与日志目录入口"""
+        win = tk.Toplevel(self)
+        win.title('运行日志与诊断')
+        win.geometry('720x520')
+        win.transient(self)
+        win.minsize(500, 350)
+
+        top_frame = ttk.Frame(win, padding=(10, 8))
+        top_frame.pack(fill='x')
+        last_err = getattr(self, 'last_failure_detail', None)
+        if last_err:
+            ttk.Label(top_frame, text='最近错误诊断：', font=('', 9, 'bold'), foreground='red').pack(anchor='w')
+            err_box = tk.Text(top_frame, height=3, wrap='word', foreground='darkred', relief='groove')
+            err_box.insert('1.0', str(last_err))
+            err_box.configure(state='disabled')
+            err_box.pack(fill='x', pady=(2, 6))
+        else:
+            ttk.Label(top_frame, text='运行日志记录（包含处理过程、调试信息与阶段状态）：').pack(anchor='w')
+
+        body_frame = ttk.Frame(win, padding=(10, 0))
+        body_frame.pack(fill='both', expand=True)
+        text = tk.Text(body_frame, wrap='word', height=16)
+        scroll = ttk.Scrollbar(body_frame, orient='vertical', command=text.yview)
+        text.configure(yscrollcommand=scroll.set)
+        scroll.pack(side='right', fill='y')
+        text.pack(side='left', fill='both', expand=True)
+
+        log_content = self.logbox.get('1.0', 'end').strip()
+        if not log_content and last_err:
+            log_content = str(last_err)
+        if not log_content:
+            log_content = '（暂无日志记录）'
+        text.insert('1.0', log_content)
+        text.see('end')
+
+        btn_row = ttk.Frame(win, padding=(10, 10))
+        btn_row.pack(fill='x')
+
+        def copy_to_clipboard():
+            self.clipboard_clear()
+            self.clipboard_append(text.get('1.0', 'end'))
+            messagebox.showinfo('提示', '日志内容已复制到剪贴板', parent=win)
+
+        def open_log_dir():
+            from core.config import LOG_DIR
+            if os.path.isdir(LOG_DIR):
+                os.startfile(LOG_DIR)
+            else:
+                os.makedirs(LOG_DIR, exist_ok=True)
+                os.startfile(LOG_DIR)
+
+        def open_project_dir():
+            manifest = self.selected_manifest()
+            target_dir = None
+            if manifest:
+                master = manifest.get('output_paths', {}).get('master_wav')
+                if master:
+                    target_dir = os.path.dirname(os.path.dirname(master))
+            if not target_dir:
+                job = self.selected_job() if hasattr(self, 'selected_job') else None
+                if job and job.get('project_dir'):
+                    target_dir = job.get('project_dir')
+            if not target_dir:
+                target_dir = self.output.get()
+            if target_dir and os.path.isdir(target_dir):
+                os.startfile(target_dir)
+            else:
+                messagebox.showinfo('提示', '未找到当前选中的任务产物目录', parent=win)
+
+        ttk.Button(btn_row, text='复制日志', command=copy_to_clipboard).pack(side='left', padx=4)
+        ttk.Button(btn_row, text='打开日志目录', command=open_log_dir).pack(side='left', padx=4)
+        ttk.Button(btn_row, text='打开当前任务目录', command=open_project_dir).pack(side='left', padx=4)
+        ttk.Button(btn_row, text='关闭', command=win.destroy).pack(side='right', padx=4)
 
     def open_output(self):
         manifest=self.selected_manifest()
@@ -2816,7 +3048,9 @@ class AIMusicProcessorApp(tk.Tk):
         ttk.Label(position,text='共同起点（秒）').pack(side='left')
         ttk.Entry(position,textvariable=start,width=10).pack(side='left',padx=6)
         self.ab_status=ttk.Label(window,text='选择 A 或 B 开始试听；停止按钮会结束当前片段')
-        self.ab_status.pack(anchor='w',padx=12,pady=8)
+        self.ab_status.pack(anchor='w',padx=12,pady=4)
+        match_loudness_var=tk.BooleanVar(window,value=True)
+        ttk.Checkbutton(window,text='启用 A/B 响度匹配（避免“更响显得更好听”偏差）',variable=match_loudness_var).pack(anchor='w',padx=12,pady=(0,4))
         buttons=ttk.Frame(window);buttons.pack(fill='x',padx=12)
         def play(side,var):
             if self.ab_preparing:return
@@ -2826,9 +3060,12 @@ class AIMusicProcessorApp(tk.Tk):
             except Exception as error:self.ab_status.configure(text=str(error));return
             self.ab_preparing=True;token=self.ab_token;self.ab_worker_token=token
             self.ab_status.configure(text='正在准备片段；源音频不会修改')
+            target_rms=getattr(self,'ab_last_rms',None) if match_loudness_var.get() else None
             def task():
                 record,error=None,None
-                try:record=prepare_ab_preview(path,Path(TEMP_DIR)/'ab-previews',offset,30.)
+                try:
+                    record=prepare_ab_preview(path,Path(TEMP_DIR)/'ab-previews',offset,30.,target_rms=target_rms)
+                    if record and record.get('rms'):self.ab_last_rms=record['rms']
                 except Exception as exc:error=exc
                 self.events.put(('ab_preview',(token,side,record,error)))
             self._start_background_worker(task,daemon=True,name='ab-preview')
@@ -2838,6 +3075,39 @@ class AIMusicProcessorApp(tk.Tk):
             stop_ab_preview();self.ab_token=uuid.uuid4().hex
             self.ab_status.configure(text='已停止；下次试听仍从共同起点开始')
         ttk.Button(buttons,text='停止',command=stop).pack(side='left')
+        def record_eval():
+            from core.polish_listening import DEFECT_TAGS,create_listening_evaluation,save_listening_evaluation
+            eval_win=tk.Toplevel(window);eval_win.title('记录人工听审评价');eval_win.geometry('420x360')
+            ttk.Label(eval_win,text='试听者姓名 / 标识:').pack(anchor='w',padx=12,pady=(8,2))
+            listener_entry=ttk.Entry(eval_win);listener_entry.insert(0,'Tester');listener_entry.pack(fill='x',padx=12)
+            ttk.Label(eval_win,text='主观偏好 (Blind Choice):').pack(anchor='w',padx=12,pady=(6,2))
+            pref_var=tk.StringVar(eval_win,value='A')
+            pref_frame=ttk.Frame(eval_win);pref_frame.pack(fill='x',padx=12)
+            for val,txt in [('A','偏好 A'),('B','偏好 B'),('EQUAL','两者相近'),('NEITHER','均不合格')]:
+                ttk.Radiobutton(pref_frame,text=txt,value=val,variable=pref_var).pack(side='left',padx=2)
+            ttk.Label(eval_win,text='观察到的问题标签 (可多选):').pack(anchor='w',padx=12,pady=(6,2))
+            defect_vars={}
+            defect_labels={'distortion':'破音/过载','robotic':'电音/机械感','sibilance':'齿音过重','bleed':'串音残留','muffled':'发闷','sync_drift':'节奏不同步'}
+            tag_frame=ttk.Frame(eval_win);tag_frame.pack(fill='x',padx=12)
+            for idx,(tag,label) in enumerate(defect_labels.items()):
+                v=tk.BooleanVar(eval_win,value=False);defect_vars[tag]=v
+                ttk.Checkbutton(tag_frame,text=label,variable=v).grid(row=idx//2,column=idx%2,sticky='w',padx=6,pady=2)
+            ttk.Label(eval_win,text='评价备注:').pack(anchor='w',padx=12,pady=(6,2))
+            notes_entry=ttk.Entry(eval_win);notes_entry.pack(fill='x',padx=12)
+            def save_eval():
+                try:
+                    import datetime
+                    case_id=(self.selected_manifest() or {}).get('job_id') or 'current_job'
+                    selected_tags=[t for t,v in defect_vars.items() if v.get()]
+                    record=create_listening_evaluation(case_id=case_id,listener=listener_entry.get(),
+                        date=datetime.date.today().isoformat(),choice_a_role=a.get(),choice_b_role=b.get(),
+                        preferred_choice=pref_var.get(),defect_tags=selected_tags,notes=notes_entry.get())
+                    saved_path=save_listening_evaluation(record,USER_DATA_DIR)
+                    eval_win.destroy()
+                    self.ab_status.configure(text='已保存人工听审评价: '+Path(saved_path).name)
+                except Exception as ex:messagebox.showerror('保存听审评价失败',str(ex))
+            ttk.Button(eval_win,text='保存听审记录',command=save_eval).pack(pady=10)
+        ttk.Button(buttons,text='记录听审评价',command=record_eval).pack(side='left',padx=6)
         def close_ab():
             stop();dispose_tk_variables(window);window.destroy();self.ab_window=None
         window.protocol('WM_DELETE_WINDOW',close_ab)
@@ -3158,9 +3428,9 @@ class AIMusicProcessorApp(tk.Tk):
         self.status.config(text='正在完整校验独立版本目录；保留当前版本及用户数据，可取消')
         def task():
             try:
-                from core.version_update import stage_update_bundle,rollback_previous_version
+                from core.version_update import install_version_update,rollback_previous_version
                 if source is None:result=rollback_previous_version(CONFIG_DIR,cancel=cancel,in_use=in_use)
-                else:result=stage_update_bundle(BASE_DIR,source,target,CONFIG_DIR,cancel=cancel,in_use=in_use)
+                else:result=install_version_update(BASE_DIR,source,target,CONFIG_DIR,cancel=cancel,in_use=in_use)
                 self.events.put(('version_operation',(result,None)))
             except Exception as exc:self.events.put(('version_operation',({},exc)))
         self._start_background_worker(task,daemon=True,name='version-update')

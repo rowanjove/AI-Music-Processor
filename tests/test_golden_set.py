@@ -62,3 +62,50 @@ class GoldenSetTests(unittest.TestCase):
         self.assertNotIn("unclassified", axes["source_kind"])
         with self.assertRaises(ValueError):
             coverage([{"source_kind": "suno", "quality_acceptance": "LISTENING_PASSED"}])
+
+    def test_generate_synthetic_audio_fixtures(self):
+        from core.golden_set import SYNTHETIC_KINDS, generate_synthetic_audio
+        with tempfile.TemporaryDirectory() as folder:
+            for kind in SYNTHETIC_KINDS:
+                target = os.path.join(folder, f"{kind}.wav")
+                res = generate_synthetic_audio(kind, target, duration_seconds=0.1, sample_rate=48000)
+                self.assertTrue(os.path.isfile(target))
+                self.assertGreater(res["sha256"], "")
+                self.assertIn(res["channels"], (1, 2))
+                self.assertEqual(res["sample_rate"], 48000)
+            with self.assertRaises(ValueError):
+                generate_synthetic_audio("invalid_kind", os.path.join(folder, "invalid.wav"))
+
+    def test_create_golden_spec_and_verification(self):
+        from core.golden_set import create_golden_spec, verify_golden_run
+        spec = create_golden_spec(
+            case_id="case-01",
+            fixture_kind="silence",
+            expected_metrics={"peak": 0.0, "clipped_samples": 0.0, "duration": 2.0},
+            params={"mode": "polish"},
+            execution_stages=["Clean", "Master"],
+        )
+        self.assertEqual(spec["listening_quality"], "not_assessed")
+        self.assertEqual(spec["quality_acceptance"], "READY_FOR_EXTERNAL_VALIDATION")
+
+        # In-tolerance run
+        measured_good = {"peak": 0.005, "clipped_samples": 0.0, "duration": 2.01}
+        stages_good = [{"stage_name": "Clean"}, {"stage_name": "Master"}]
+        res_pass = verify_golden_run(spec, measured_good, stages_good)
+        self.assertTrue(res_pass["passed"])
+        self.assertEqual(res_pass["status"], "PASS")
+        self.assertEqual(res_pass["stage_integrity"], "INTACT")
+
+        # Exceeded peak tolerance
+        measured_bad_peak = {"peak": 0.05, "clipped_samples": 0.0, "duration": 2.0}
+        res_fail = verify_golden_run(spec, measured_bad_peak, stages_good)
+        self.assertFalse(res_fail["passed"])
+        self.assertEqual(res_fail["status"], "FAIL")
+        self.assertFalse(res_fail["deviations"]["peak"]["passed"])
+
+        # Stage degraded
+        stages_bad = [{"stage_name": "Clean"}]
+        res_degraded = verify_golden_run(spec, measured_good, stages_bad)
+        self.assertFalse(res_degraded["passed"])
+        self.assertEqual(res_degraded["status"], "FAIL")
+        self.assertEqual(res_degraded["stage_integrity"], "DEGRADED")

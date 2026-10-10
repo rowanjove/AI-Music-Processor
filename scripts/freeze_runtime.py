@@ -883,7 +883,9 @@ def build_snapshot(root, output_dir, python_executable=None, python_info=None,
     if not output_dir.is_absolute():
         output_dir = root / output_dir
     output_dir = output_dir.resolve()
-    if not output_dir.is_relative_to(root):
+    try:
+        output_dir.relative_to(root.resolve())
+    except ValueError:
         raise ValueError("manifest output directory must stay inside the project root")
     _atomic_json(output_dir / "inventory.json", inventory)
     _atomic_json(output_dir / "packages.lock.json", package_lock)

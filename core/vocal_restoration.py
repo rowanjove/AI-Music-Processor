@@ -332,7 +332,10 @@ def _fit_frames(audio, frames):
     audio = np.asarray(audio, dtype=np.float32)
     if len(audio) >= frames:
         return audio[:frames]
-    return np.pad(audio, (0, frames - len(audio)))
+    pad_len = frames - len(audio)
+    if audio.ndim == 1:
+        return np.pad(audio, (0, pad_len))
+    return np.pad(audio, ((0, pad_len), (0, 0)))
 
 
 def _write_float(path, data, rate):

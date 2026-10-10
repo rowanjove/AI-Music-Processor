@@ -129,19 +129,61 @@ class Launcher {
       Button cancel=new Button { Left=285,Top=120,Width=100,Height=32,Text="取消",DialogResult=DialogResult.Cancel };
       form.Controls.Add(status); form.Controls.Add(repair); form.Controls.Add(cancel);
       string installer=Path.Combine(root,"scripts\\install_components.ps1");
+      string testHookInstaller=Environment.GetEnvironmentVariable("AMP_TEST_INSTALLER_SCRIPT");
+      if(!string.IsNullOrEmpty(testHookInstaller)&&File.Exists(testHookInstaller)) installer=testHookInstaller;
       if(File.Exists(installer) && File.Exists(Path.Combine(root,"LIGHTWEIGHT_RELEASE")) &&
          !File.Exists(Path.Combine(root,"runtime-manifest\\runtime.json"))) {
         form.Height=280;
         Button online=new Button {Left=20,Top=165,Width=365,Height=32,Text="安装 Python 与精修组件（需要网络）"};
         form.Controls.Add(online);
+        Process installProcess=null;
+        form.FormClosing+=delegate(object sender,FormClosingEventArgs e) {
+          if(installProcess!=null&&!installProcess.HasExited) {
+            DialogResult confirm=MessageBox.Show(form,"组件安装正在后台执行中。若退出引导，安装可能中断。\n确定要取消并退出吗？","正在安装",MessageBoxButtons.YesNo,MessageBoxIcon.Warning);
+            if(confirm!=DialogResult.Yes) { e.Cancel=true; return; }
+            try { if(!installProcess.HasExited) installProcess.Kill(); } catch {}
+          }
+        };
         online.Click+=delegate {
           try {
             string shell=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),"WindowsPowerShell\\v1.0\\powershell.exe");
-            Process.Start(new ProcessStartInfo {FileName=shell,
+            online.Enabled=false; repair.Enabled=false; cancel.Enabled=false;
+            status.Text="已打开安装控制台，正在下载并部署 Python 与精修组件…\n请在外部窗口中观察进度，安装完成前请勿关闭此窗口。";
+            Process proc=new Process();
+            proc.StartInfo=new ProcessStartInfo {
+              FileName=shell,
               Arguments="-NoProfile -ExecutionPolicy Bypass -File "+QuoteArg(installer)+" -Root "+QuoteArg(root)+" -InstallPython -Components polish",
-              WorkingDirectory=root,UseShellExecute=true});
-            status.Text="安装器已打开，将显示下载与安装进度。完成后请关闭本窗口并重新启动。\n换声/转谱和用户声线模型可随后按需安装；不会自动下载未核验来源。";
-          } catch(Exception error){status.Text="安装器未启动："+error.Message;}
+              WorkingDirectory=root,
+              UseShellExecute=true
+            };
+            proc.EnableRaisingEvents=true;
+            installProcess=proc;
+            proc.Exited+=delegate {
+              int exitCode=proc.ExitCode;
+              string logPath=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                          "AI-Music-Processor","logs","online-components-progress.jsonl");
+              string pythonPath=Path.Combine(root,@"tools\RVC\RVC-beta-v2-0618\runtime\python.exe");
+              form.BeginInvoke((MethodInvoker)delegate {
+                if(form.IsDisposed) return;
+                installProcess=null; cancel.Enabled=true;
+                if(exitCode==0 && File.Exists(pythonPath)) {
+                  status.Text="Python 与精修组件已成功安装！将继续执行运行环境门禁校验。";
+                  MessageBox.Show(form,"基础精修环境已安装完成。即将继续执行运行环境门禁。","在线安装完成",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                  form.DialogResult=DialogResult.OK;
+                  form.Close();
+                } else {
+                  status.Text="在线安装未完成或失败（退出码 "+exitCode+"）。\n详细日志请查看："+logPath+"\n换声/转谱重型模型需受控导入；您可以检查网络后重试。";
+                  online.Enabled=true;
+                  online.Text="重试安装 Python 与精修组件";
+                  repair.Enabled=true;
+                }
+              });
+            };
+            proc.Start();
+          } catch(Exception error) {
+            status.Text="安装器启动失败："+error.Message;
+            online.Enabled=true; repair.Enabled=true; cancel.Enabled=true;
+          }
         };
       }
       form.CancelButton=cancel;
